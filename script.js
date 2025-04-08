@@ -37,3 +37,13 @@ function addItem(item) {
     console.log(item + " wurde zur Rechnung hinzugefügt.");
     // Beispiel: Du könntest den Artikel in ein Eingabefeld einfügen oder eine Liste aktualisieren
 }
+function addItem(name, menge, einzelpreis) {
+    // Hier kannst du die Logik hinzufügen, um den Artikel zur Rechnung hinzuzufügen
+    console.log(name + " wurde zur Rechnung hinzugefügt. Menge: " + menge + ", Einzelpreis: " + einzelpreis + "€");
+    
+    // Beispiel: Artikel zur Rechnungsliste hinzufügen
+    let rechnungsliste = document.getElementById('rechnungsliste'); // Stelle sicher, dass du ein Element mit dieser ID hast
+    let listItem = document.createElement('li');
+    listItem.textContent = `${name} - Menge: ${menge}, Einzelpreis: ${einzelpreis}€`;
+    rechnungsliste.appendChild(listItem);
+}
