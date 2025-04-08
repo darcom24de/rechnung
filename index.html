@@ -3,20 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rechnung erstellen</title>
+  <title>Rechnung erstellen – darcom24</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background: #f5f5f5;
+      background: #fff;
       padding: 2rem;
-      max-width: 600px;
+      max-width: 800px;
       margin: auto;
+    }
+    img {
+      max-width: 150px;
+      display: block;
+      margin: 0 auto 2rem;
     }
     h1 {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
     label {
       font-weight: 600;
@@ -28,10 +33,20 @@
       border: 1px solid #ccc;
       border-radius: 0.5rem;
     }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: left;
+    }
     button {
       width: 100%;
       padding: 1rem;
-      background-color: #4f46e5;
+      background-color: #000;
       color: white;
       border: none;
       border-radius: 0.5rem;
@@ -39,44 +54,119 @@
       cursor: pointer;
     }
     button:hover {
-      background-color: #4338ca;
+      background-color: #333;
     }
   </style>
 </head>
 <body>
+  <img src="logo-darcom.png" alt="darcom24 Logo">
   <h1>Rechnung erstellen</h1>
 
   <label for="kunde">Kunde</label>
   <input type="text" id="kunde" placeholder="Kundenname">
 
-  <label for="beschreibung">Beschreibung</label>
-  <input type="text" id="beschreibung" placeholder="Leistung / Produkt">
+  <label for="adresse">Adresse</label>
+  <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
 
-  <label for="betrag">Betrag in Euro</label>
-  <input type="number" id="betrag" placeholder="z. B. 100">
-
+  <label for="artikel">Artikel (Name, Menge, Einzelpreis)</label>
+  <table id="artikelTabelle">
+    <thead>
+      <tr>
+        <th>Artikel</th>
+        <th>Menge</th>
+        <th>Einzelpreis (€)</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="text" placeholder="z. B. Monitor"></td>
+        <td><input type="number" value="1"></td>
+        <td><input type="number" value="0"></td>
+        <td><button onclick="removeRow(this)">✕</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <button onclick="addRow()">+ Artikel hinzufügen</button>
+  <br><br>
   <button onclick="downloadPDF()">PDF herunterladen</button>
 
   <script>
+    let rechnungsnummer = localStorage.getItem('rechnungsnummer') || 1001;
+
+    function addRow() {
+      const table = document.getElementById('artikelTabelle').getElementsByTagName('tbody')[0];
+      const row = table.insertRow();
+      row.innerHTML = `
+        <td><input type="text" placeholder="Artikel"></td>
+        <td><input type="number" value="1"></td>
+        <td><input type="number" value="0"></td>
+        <td><button onclick="removeRow(this)">✕</button></td>
+      `;
+    }
+
+    function removeRow(btn) {
+      const row = btn.parentNode.parentNode;
+      row.parentNode.removeChild(row);
+    }
+
     async function downloadPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-
       const kunde = document.getElementById('kunde').value;
-      const beschreibung = document.getElementById('beschreibung').value;
-      const betrag = document.getElementById('betrag').value;
+      const adresse = document.getElementById('adresse').value;
+      const datum = new Date().toLocaleDateString('de-DE');
+      const rechnr = rechnungsnummer++;
+      localStorage.setItem('rechnungsnummer', rechnungsnummer);
 
       doc.setFontSize(18);
       doc.text("Rechnung", 20, 20);
-
       doc.setFontSize(12);
-      doc.text(`Kunde: ${kunde}`, 20, 40);
-      doc.text(`Beschreibung: ${beschreibung}`, 20, 50);
-      doc.text(`Betrag: €${betrag}`, 20, 60);
+      doc.text(`Rechnungsnummer: ${rechnr}`, 20, 30);
+      doc.text(`Datum: ${datum}`, 20, 37);
+      doc.text(`Kunde: ${kunde}`, 20, 47);
+      doc.text(`Adresse: ${adresse}`, 20, 54);
 
-      doc.text("Vielen Dank für Ihren Auftrag!", 20, 80);
+      let y = 70;
+      let netto = 0;
 
-      doc.save(`Rechnung_${kunde}.pdf`);
+      doc.text("Artikel", 20, y);
+      doc.text("Menge", 90, y);
+      doc.text("Einzelpreis", 120, y);
+      doc.text("Gesamt", 160, y);
+      y += 7;
+
+      const rows = document.querySelectorAll('#artikelTabelle tbody tr');
+      rows.forEach(row => {
+        const name = row.cells[0].querySelector('input').value;
+        const menge = parseFloat(row.cells[1].querySelector('input').value);
+        const preis = parseFloat(row.cells[2].querySelector('input').value);
+        const gesamt = menge * preis;
+        netto += gesamt;
+
+        doc.text(name, 20, y);
+        doc.text(`${menge}`, 95, y);
+        doc.text(`${preis.toFixed(2)} €`, 120, y);
+        doc.text(`${gesamt.toFixed(2)} €`, 160, y);
+        y += 7;
+      });
+
+      const mwst = netto * 0.19;
+      const brutto = netto + mwst;
+
+      y += 10;
+      doc.text(`Netto: ${netto.toFixed(2)} €`, 20, y);
+      y += 7;
+      doc.text(`MwSt. (19 %): ${mwst.toFixed(2)} €`, 20, y);
+      y += 7;
+      doc.text(`Gesamtbetrag: ${brutto.toFixed(2)} €`, 20, y);
+
+      y += 14;
+      doc.setFontSize(10);
+      doc.text("Vielen Dank für Ihren Auftrag!", 20, y);
+      doc.text("darcom24 Restposten", 20, y + 6);
+
+      doc.save(`Rechnung_${rechnr}_${kunde}.pdf`);
     }
   </script>
 </body>
