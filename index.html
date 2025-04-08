@@ -14,14 +14,18 @@
       max-width: 800px;
       margin: auto;
     }
-    img {
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .header img {
       max-width: 150px;
-      display: block;
-      margin: 0 auto 2rem;
     }
     h1 {
-      text-align: center;
-      margin-bottom: 1.5rem;
+      text-align: left;
+      margin: 0;
     }
     label {
       font-weight: 600;
@@ -59,8 +63,10 @@
   </style>
 </head>
 <body>
-  <img src="logo-darcom.png" alt="darcom24 Logo">
-  <h1>Rechnung erstellen</h1>
+  <div class="header">
+    <h1>Rechnung erstellen</h1>
+    <img src="logo-darcom.png" alt="darcom24 Logo">
+  </div>
 
   <label for="kunde">Kunde</label>
   <input type="text" id="kunde" placeholder="Kundenname">
@@ -118,6 +124,15 @@
       const datum = new Date().toLocaleDateString('de-DE');
       const rechnr = rechnungsnummer++;
       localStorage.setItem('rechnungsnummer', rechnungsnummer);
+
+      const logo = new Image();
+      logo.src = 'logo-darcom.png';
+
+      await new Promise(resolve => {
+        logo.onload = resolve;
+      });
+
+      doc.addImage(logo, 'PNG', 150, 10, 40, 20);
 
       doc.setFontSize(18);
       doc.text("Rechnung", 20, 20);
