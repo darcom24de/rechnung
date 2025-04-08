@@ -85,7 +85,7 @@
 <body>
   <div class="header">
     <h1>Rechnung erstellen</h1>
-    <img src="logo-darcom.png" alt="darcom24 Logo">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACt..." alt="darcom24 Logo">
   </div>
 
   <label for="kunde">Kunde</label>
@@ -94,20 +94,7 @@
   <label for="adresse">Adresse</label>
   <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
 
-  <div class="artikel-buttons">
-    <div class="artikel-card" onclick="addArtikel('Dragon Ball Son Goku Kissen', 1, 10)">
-      <img src=https://i0.wp.com/darcom24.de/wp-content/uploads/2025/03/dragon-ball-Son-Goku-kissen.jpeg?fit=1600%2C1600&ssl=1>
-     Dragon Ball Son Goku Kissen<br><strong>5 €</strong>
-        </div>
-      <div class="artikel-card" onclick="addArtikel('Dragon Ball Vegeta Kissen', 1, 10)">
-      <img src=https://i0.wp.com/darcom24.de/wp-content/uploads/2025/03/dragon-ball-vegeta-kissen.jpeg?fit=1600%2C1600&ssl=1>
-     Dragon Ball Vegeta Kissen<br><strong>5 €</strong>
-    </div>
-    <div class="artikel-card" onclick="addArtikel('Matell Masters of the Universe Spikor', 1, 10)">
-      <img src=https://i0.wp.com/darcom24.de/wp-content/uploads/2025/03/1000065529.jpg?fit=1600%2C1600&ssl=1>
-     Matell Masters of the Universe Spikor<br><strong>8 €</strong>
-    </div>
-  </div>
+  <div class="artikel-buttons" id="artikelButtons"></div>
 
   <label for="artikel">Artikel (Name, Menge, Einzelpreis)</label>
   <table id="artikelTabelle">
@@ -134,6 +121,36 @@
 
   <script>
     let rechnungsnummer = localStorage.getItem('rechnungsnummer') || 1001;
+
+    const artikel = [
+      {
+        name: "Teenage Mutant Ninja Turtles Donatello",
+        preis: 9.99,
+        bild: "https://darcom24.de/wp-content/uploads/2024/03/teenage-mutant-ninja-turtles-donatello.jpg"
+      },
+      {
+        name: "Clementoni Baby Mickey Maus Auto",
+        preis: 14.99,
+        bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-baby-mickey-maus-auto.jpg"
+      },
+      {
+        name: "Clementoni 17687 Baby Logik Spiel",
+        preis: 12.99,
+        bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-17687-baby-logik-spiel.jpg"
+      }
+    ];
+
+    const container = document.getElementById("artikelButtons");
+    artikel.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "artikel-card";
+      card.innerHTML = `
+        <img src="${item.bild}" alt="${item.name}">
+        <strong>${item.name}</strong><br>${item.preis.toFixed(2)} €
+      `;
+      card.onclick = () => addArtikel(item.name, 1, item.preis);
+      container.appendChild(card);
+    });
 
     function addRow(name = '', menge = 1, preis = 0) {
       const table = document.getElementById('artikelTabelle').getElementsByTagName('tbody')[0];
@@ -165,6 +182,71 @@
       localStorage.setItem('rechnungsnummer', rechnungsnummer);
 
       const logo = new Image();
-      logo.src
-::contentReference[oaicite:2]{index=2}
- 
+      logo.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACt...';
+
+      await new Promise(resolve => {
+        if (logo.complete) {
+          resolve();
+        } else {
+          logo.onload = resolve;
+        }
+      });
+
+      doc.addImage(logo, 'PNG', 150, 10, 40, 20);
+
+      doc.setFontSize(18);
+      doc.text("Rechnung", 20, 20);
+      doc.setFontSize(12);
+      doc.text(`Rechnungsnummer: ${rechnr}`, 20, 30);
+      doc.text(`Datum: ${datum}`, 20, 37);
+      doc.text(`Kunde: ${kunde}`, 20, 47);
+      doc.text(`Adresse: ${adresse}`, 20, 54);
+
+      let y = 70;
+      let netto = 0;
+
+      doc.text("Artikel", 20, y);
+      doc.text("Menge", 90, y);
+      doc.text("Einzelpreis", 120, y);
+      doc.text("Gesamt", 160, y);
+      y += 7;
+
+      const rows = document.querySelectorAll('#artikelTabelle tbody tr');
+      rows.forEach(row => {
+        const name = row.cells[0].querySelector('input').value;
+        const menge = parseFloat(row.cells[1].querySelector('input').value);
+        const preis = parseFloat(row.cells[2].querySelector('input').value);
+        const gesamt = menge * preis;
+        netto += gesamt;
+
+        doc.text(name, 20, y);
+        doc.text(`${menge}`, 95, y);
+        doc.text(`${preis.toFixed(2)} €`, 120, y);
+        doc.text(`${gesamt.toFixed(2)} €`, 160, y);
+        y += 7;
+      });
+
+      const mwst = netto * 0.19;
+      const brutto = netto + mwst;
+
+      y += 10;
+      doc.text(`Netto: ${netto.toFixed(2)} €`, 20, y);
+      y += 7;
+      doc.text(`MwSt. (19 %): ${mwst.toFixed(2)} €`, 20, y);
+      y += 7;
+      doc.setFont(undefined, "bold");
+      doc.setFontSize(14);
+      doc.text(`Gesamtbetrag: ${brutto.toFixed(2)} €`, 20, y);
+      doc.setFontSize(12);
+      doc.setFont(undefined, "normal");
+
+      y += 14;
+      doc.setFontSize(10);
+      doc.text("Vielen Dank für Ihren Auftrag!", 20, y);
+      doc.text("darcom24 Restposten", 20, y + 6);
+
+      doc.save(`Rechnung_${rechnr}_${kunde}.pdf`);
+    }
+  </script>
+</body>
+</html>
