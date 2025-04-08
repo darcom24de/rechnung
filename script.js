@@ -32,3 +32,8 @@ function generateInvoice() {
 
   updateTotal();
 }
+function addItem(item) {
+    // Hier kannst du die Logik hinzufügen, um den Artikel zur Rechnung hinzuzufügen
+    console.log(item + " wurde zur Rechnung hinzugefügt.");
+    // Beispiel: Du könntest den Artikel in ein Eingabefeld einfügen oder eine Liste aktualisieren
+}
