@@ -1,0 +1,28 @@
+/* Mobile Optimierung (max. 768px Bildschirmbreite) */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  .container {
+    width: 100%;
+    margin: 0;
+    padding: 10px;
+  }
+  
+  input, select, button {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+  }
+  
+  table {
+    font-size: 12px;
+  }
+  
+  #rechnungVorschau {
+    padding: 10px;
+    overflow-x: auto; /* Scrollbar für Tabellen auf kleinen Bildschirmen */
+  }
+}
