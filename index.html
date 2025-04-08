@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="style.css" rel="stylesheet">
-  <title>Rechnung – darcom24</title>
+  <title>Rechnung erstellen – darcom24</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
@@ -61,55 +60,22 @@
     button:hover {
       background-color: #333;
     }
-    .artikel-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin: 1rem 0;
-    }
-    .artikel-card {
-      border: 1px solid #ccc;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      width: 150px;
-      text-align: center;
-      cursor: pointer;
-    }
-    .artikel-card img {
-      width: 100%;
-      height: auto;
-      border-radius: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>Rechnung</h1>
+    <h1>Rechnung erstellen</h1>
     <img src="logo-darcom.png" alt="darcom24 Logo">
   </div>
+
   <label for="kunde">Kunde</label>
   <input type="text" id="kunde" placeholder="Kundenname">
 
   <label for="adresse">Adresse</label>
   <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
 
-  <div class="artikel-buttons">
-    <div class="artikel-card" onclick="addArtikel('Dragon Ball Son Goku Kissen', 1, 10)">
-      <img src=https://i0.wp.com/darcom24.de/wp-content/uploads/2025/03/dragon-ball-Son-Goku-kissen.jpeg?fit=1600%2C1600&ssl=1>
-      <strong>Dragon Ball Son Goku Kissen</strong><br>10 €
-    </div>
-     <div class="artikel-card" onclick="addArtikel('Super Mario Bombe', 1, 10)">
-      <img src="https://i0.wp.com/darcom24.de/wp-content/uploads/2025/03/super-mario-bombe.jpeg?fit=1600%2C1600&ssl=1>
-      <strong>Super Mario Bombe</strong><br>10 €
-    </div>
-  </div>
-        </div>
-
-        
-        
-<label for="artikel">Artikel (Name, Menge, Einzelpreis)</label>
-    <table id="artikelTabelle">
+  <label for="artikel">Artikel (Name, Menge, Einzelpreis)</label>
+  <table id="artikelTabelle">
     <thead>
       <tr>
         <th>Artikel</th>
@@ -134,19 +100,15 @@
   <script>
     let rechnungsnummer = localStorage.getItem('rechnungsnummer') || 1001;
 
-    function addRow(name = '', menge = 1, preis = 0) {
+    function addRow() {
       const table = document.getElementById('artikelTabelle').getElementsByTagName('tbody')[0];
       const row = table.insertRow();
       row.innerHTML = `
-        <td><input type="text" value="${name}" placeholder="Artikel"></td>
-        <td><input type="number" value="${menge}"></td>
-        <td><input type="number" value="${preis}"></td>
+        <td><input type="text" placeholder="Artikel"></td>
+        <td><input type="number" value="1"></td>
+        <td><input type="number" value="0"></td>
         <td><button onclick="removeRow(this)">✕</button></td>
       `;
-    }
-
-    function addArtikel(name, menge, preis) {
-      addRow(name, menge, preis);
     }
 
     function removeRow(btn) {
@@ -217,11 +179,10 @@
       y += 14;
       doc.setFontSize(10);
       doc.text("Vielen Dank für Ihren Auftrag!", 20, y);
-      doc.text("darcom24.de Restposten", 20, y + 6);
+      doc.text("darcom24 Restposten", 20, y + 6);
 
       doc.save(`Rechnung_${rechnr}_${kunde}.pdf`);
     }
   </script>
-  <script src="script.js"></script>
 </body>
 </html>
