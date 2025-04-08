@@ -214,7 +214,7 @@
       });
 
       const mwst = netto * 0.19;
-      const brutto = netto + mwst;
+      const brutto = netto - mwst;
 
       y += 10;
       doc.text(`Netto: ${netto.toFixed(2)} €`, 20, y);
