@@ -11,10 +11,12 @@
     padding: 10px;
   }
   
-  input, select, button {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
+  button {
+  padding: 12px !important; /* Größere Klickflächen */
+}
+input, select {
+  box-sizing: border-box; /* Bessere Breitenberechnung */
+}
   }
   
   table {
