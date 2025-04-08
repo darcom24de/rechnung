@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rechnung erstellen – darcom24</title>
+  <title>Rechnung – darcom24</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
@@ -214,7 +214,7 @@
       });
 
       const mwst = netto * 0.19;
-      const brutto = netto - mwst;
+      const brutto = netto + mwst;
 
       y += 10;
       doc.text(`Netto: ${netto.toFixed(2)} €`, 20, y);
@@ -226,7 +226,7 @@
       y += 14;
       doc.setFontSize(10);
       doc.text("Vielen Dank für Ihren Auftrag!", 20, y);
-      doc.text("darcom24 Restposten", 20, y + 6);
+      doc.text("darcom24.de Restposten", 20, y + 6);
 
       doc.save(`Rechnung_${rechnr}_${kunde}.pdf`);
     }
