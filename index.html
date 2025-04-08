@@ -80,11 +80,28 @@
       border-radius: 0.5rem;
       margin-bottom: 0.5rem;
     }
+    .logo-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo-section .rechnung-text {
+      font-size: 1.75rem;
+      font-weight: 600;
+    }
+    .footer {
+      margin-top: 4rem;
+      font-size: 0.9rem;
+      color: #666;
+      border-top: 1px solid #ccc;
+      padding-top: 1rem;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>Rechnung erstellen</h1>
+    <div class="rechnung-text">Rechnung erstellen</div>
     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACt..." alt="darcom24 Logo">
   </div>
 
@@ -108,7 +125,10 @@
     </thead>
     <tbody>
       <tr>
-        <td><input type="text" placeholder="z. B. Monitor"></td>
+        <td>
+          <input type="text" placeholder="z. B. Monitor">
+          <input type="hidden" value="">
+        </td>
         <td><input type="number" value="1"></td>
         <td><input type="number" value="0"></td>
         <td><button onclick="removeRow(this)">✕</button></td>
@@ -118,6 +138,12 @@
   <button onclick="addRow()">+ Artikel hinzufügen</button>
   <br><br>
   <button onclick="downloadPDF()">PDF herunterladen</button>
+
+  <div class="footer">
+    darcom24 Restposten<br>
+    Musterstraße 123, 12345 Musterstadt<br>
+    Tel: 01234 567890 – E-Mail: info@darcom24.de – Web: www.darcom24.de
+  </div>
 
   <script>
     let rechnungsnummer = localStorage.getItem('rechnungsnummer') || 1001;
@@ -140,6 +166,16 @@
       }
     ];
 
+    async function getBase64FromUrl(url) {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    }
+
     const container = document.getElementById("artikelButtons");
     artikel.forEach(item => {
       const card = document.createElement("div");
@@ -148,23 +184,29 @@
         <img src="${item.bild}" alt="${item.name}">
         <strong>${item.name}</strong><br>${item.preis.toFixed(2)} €
       `;
-      card.onclick = () => addArtikel(item.name, 1, item.preis);
+      card.onclick = async () => {
+        const base64 = await getBase64FromUrl(item.bild);
+        addArtikel(item.name, 1, item.preis, base64);
+      };
       container.appendChild(card);
     });
 
-    function addRow(name = '', menge = 1, preis = 0) {
+    function addRow(name = '', menge = 1, preis = 0, bild = '') {
       const table = document.getElementById('artikelTabelle').getElementsByTagName('tbody')[0];
       const row = table.insertRow();
       row.innerHTML = `
-        <td><input type="text" value="${name}" placeholder="Artikel"></td>
+        <td>
+          <input type="text" value="${name}" placeholder="Artikel">
+          <input type="hidden" value="${bild}">
+        </td>
         <td><input type="number" value="${menge}"></td>
         <td><input type="number" value="${preis}"></td>
         <td><button onclick="removeRow(this)">✕</button></td>
       `;
     }
 
-    function addArtikel(name, menge, preis) {
-      addRow(name, menge, preis);
+    function addArtikel(name, menge, preis, bild = '') {
+      addRow(name, menge, preis, bild);
     }
 
     function removeRow(btn) {
@@ -212,19 +254,29 @@
       y += 7;
 
       const rows = document.querySelectorAll('#artikelTabelle tbody tr');
-      rows.forEach(row => {
-        const name = row.cells[0].querySelector('input').value;
+      for (const row of rows) {
+        const name = row.cells[0].querySelector('input[type="text"]').value;
         const menge = parseFloat(row.cells[1].querySelector('input').value);
         const preis = parseFloat(row.cells[2].querySelector('input').value);
+        const bildBase64 = row.cells[0].querySelector('input[type="hidden"]').value;
         const gesamt = menge * preis;
         netto += gesamt;
 
-        doc.text(name, 20, y);
-        doc.text(`${menge}`, 95, y);
-        doc.text(`${preis.toFixed(2)} €`, 120, y);
-        doc.text(`${gesamt.toFixed(2)} €`, 160, y);
-        y += 7;
-      });
+        if (bildBase64) {
+          doc.addImage(bildBase64, 'JPEG', 20, y, 20, 20);
+          doc.text(name, 45, y + 5);
+          doc.text(`${menge}`, 95, y + 5);
+          doc.text(`${preis.toFixed(2)} €`, 120, y + 5);
+          doc.text(`${gesamt.toFixed(2)} €`, 160, y + 5);
+          y += 25;
+        } else {
+          doc.text(name, 20, y);
+          doc.text(`${menge}`, 95, y);
+          doc.text(`${preis.toFixed(2)} €`, 120, y);
+          doc.text(`${gesamt.toFixed(2)} €`, 160, y);
+          y += 7;
+        }
+      }
 
       const mwst = netto * 0.19;
       const brutto = netto + mwst;
@@ -245,7 +297,7 @@
       doc.text("Vielen Dank für Ihren Auftrag!", 20, y);
       doc.text("darcom24 Restposten", 20, y + 6);
 
-      doc.save(`Rechnung_${rechnr}_${kunde}.pdf`);
+      doc.save(`Rechnung_${rechnr}_${kunde || 'Unbekannt'}.pdf`);
     }
   </script>
 </body>
