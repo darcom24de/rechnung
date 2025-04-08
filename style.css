@@ -28,3 +28,46 @@ input, select {
     overflow-x: auto; /* Scrollbar für Tabellen auf kleinen Bildschirmen */
   }
 }
+/* Dropdown Container */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown Button */
+.dropbtn {
+    background-color: #4CAF50; /* Grüner Hintergrund */
+    color: white; /* Weiße Schrift */
+    padding: 10px; /* Innenabstand */
+    font-size: 16px; /* Schriftgröße */
+    border: none; /* Kein Rahmen */
+    cursor: pointer; /* Zeiger-Cursor */
+}
+
+/* Dropdown Inhalt (versteckt standardmäßig) */
+.dropdown-content {
+    display: none; /* Standardmäßig versteckt */
+    position: absolute; /* Absolute Positionierung */
+    background-color: #f9f9f9; /* Hintergrundfarbe */
+    min-width: 160px; /* Minimale Breite */
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); /* Schatten */
+    z-index: 1; /* Über anderen Elementen */
+}
+
+/* Links im Dropdown */
+.dropdown-content a {
+    color: black; /* Textfarbe */
+    padding: 12px 16px; /* Innenabstand */
+    text-decoration: none; /* Keine Unterstreichung */
+    display: block; /* Block-Element */
+}
+
+/* Links im Dropdown bei Hover */
+.dropdown-content a:hover {
+    background-color: #f1f1f1; /* Hintergrundfarbe bei Hover */
+}
+
+/* Dropdown anzeigen, wenn der Benutzer mit der Maus darüber fährt */
+.dropdown:hover .dropdown-content {
+    display: block; /* Dropdown anzeigen */
+}
