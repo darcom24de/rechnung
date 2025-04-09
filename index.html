@@ -2,14 +2,11 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rechnung – darcom24</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
-      font-family: 'Inter', sans-serif;
-      background: #fff;
+      font-family: sans-serif;
       padding: 2rem;
       max-width: 800px;
       margin: auto;
@@ -23,282 +20,61 @@
     .header img {
       max-width: 150px;
     }
-    h1 {
-      text-align: left;
-      margin: 0;
-    }
-    label {
-      font-weight: 600;
-    }
     input {
-      width: 100%;
-      padding: 0.75rem;
+      display: block;
       margin-bottom: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 0.5rem;
-    }
-    table {
       width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 1rem;
-    }
-    th, td {
-      border: 1px solid #ccc;
       padding: 0.5rem;
-      text-align: left;
     }
     button {
-      width: 100%;
-      padding: 1rem;
-      background-color: #000;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: black;
       color: white;
       border: none;
       border-radius: 0.5rem;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #333;
-    }
-    .artikel-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin: 1rem 0;
-    }
-    .artikel-card {
-      border: 1px solid #ccc;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      width: 150px;
-      text-align: center;
-      cursor: pointer;
-    }
-    .artikel-card img {
-      width: 100%;
-      height: auto;
-      border-radius: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-    .logo-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .logo-section .rechnung-text {
-      font-size: 1.75rem;
-      font-weight: 600;
-    }
-    .footer {
-      margin-top: 4rem;
-      font-size: 0.9rem;
-      color: #666;
-      border-top: 1px solid #ccc;
-      padding-top: 1rem;
-      text-align: center;
     }
   </style>
 </head>
 <body>
+
   <div class="header">
-    <div class="rechnung-text">Rechnung</div>
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACt..." alt="darcom24 Logo">
+    <h1>Rechnung erstellen</h1>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAaCAYAAADeIEn9AAAAAXNSR0IArs4c6QAA..." alt="darcom24 Logo">
   </div>
 
-  <label for="kunde">Kunde</label>
+  <label>Kunde:</label>
   <input type="text" id="kunde" placeholder="Kundenname">
-
-  <label for="adresse">Adresse</label>
+  <label>Adresse:</label>
   <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
 
-  <div class="artikel-buttons" id="artikelButtons"></div>
-
-  <label for="artikel">Artikel (Name, Menge, Einzelpreis)</label>
-  <table id="artikelTabelle">
-    <thead>
-      <tr>
-        <th>Artikel</th>
-        <th>Menge</th>
-        <th>Einzelpreis (€)</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>
-          <input type="text" placeholder="z. B. Monitor">
-          <input type="hidden" value="">
-        </td>
-        <td><input type="number" value="1"></td>
-        <td><input type="number" value="0"></td>
-        <td><button onclick="removeRow(this)">✕</button></td>
-      </tr>
-    </tbody>
-  </table>
-  <button onclick="addRow()">+ Artikel hinzufügen</button>
-  <br><br>
   <button onclick="downloadPDF()">PDF herunterladen</button>
 
-  <div class="footer">
-    darcom24<br>
-    Pankstraße 46, 13357 Berlin<br>
-    Tel: 01639417382 – E-Mail: darcom24.de@gmail.com – Web: www.darcom24.de
-  </div>
-
   <script>
-    let rechnungsnummer = localStorage.getItem('rechnungsnummer') || 1001;
-
-    const artikel = [
-      {
-        name: "Teenage Mutant Ninja Turtles Donatello",
-        preis: 9.99,
-        bild: "https://darcom24.de/wp-content/uploads/2024/03/teenage-mutant-ninja-turtles-donatello.jpg"
-      },
-      {
-        name: "Clementoni Baby Mickey Maus Auto",
-        preis: 14.99,
-        bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-baby-mickey-maus-auto.jpg"
-      },
-      {
-        name: "Clementoni 17687 Baby Logik Spiel",
-        preis: 12.99,
-        bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-17687-baby-logik-spiel.jpg"
-      }
-    ];
-
-    async function getBase64FromUrl(url) {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-      });
-    }
-
-    const container = document.getElementById("artikelButtons");
-    artikel.forEach(item => {
-      const card = document.createElement("div");
-      card.className = "artikel-card";
-      card.innerHTML = `
-        <img src="${item.bild}" alt="${item.name}">
-        <strong>${item.name}</strong><br>${item.preis.toFixed(2)} €
-      `;
-      card.onclick = async () => {
-        const base64 = await getBase64FromUrl(item.bild);
-        addArtikel(item.name, 1, item.preis, base64);
-      };
-      container.appendChild(card);
-    });
-
-    function addRow(name = '', menge = 1, preis = 0, bild = '') {
-      const table = document.getElementById('artikelTabelle').getElementsByTagName('tbody')[0];
-      const row = table.insertRow();
-      row.innerHTML = `
-        <td>
-          <input type="text" value="${name}" placeholder="Artikel">
-          <input type="hidden" value="${bild}">
-        </td>
-        <td><input type="number" value="${menge}"></td>
-        <td><input type="number" value="${preis}"></td>
-        <td><button onclick="removeRow(this)">✕</button></td>
-      `;
-    }
-
-    function addArtikel(name, menge, preis, bild = '') {
-      addRow(name, menge, preis, bild);
-    }
-
-    function removeRow(btn) {
-      const row = btn.parentNode.parentNode;
-      row.parentNode.removeChild(row);
-    }
-
     async function downloadPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       const kunde = document.getElementById('kunde').value;
       const adresse = document.getElementById('adresse').value;
       const datum = new Date().toLocaleDateString('de-DE');
-      const rechnr = rechnungsnummer++;
-      localStorage.setItem('rechnungsnummer', rechnungsnummer);
 
       const logo = new Image();
-      logo.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACt...';
+      logo.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAaCAYAAADeIEn9AAAAAXNSR0IArs4c6QAA...";
 
-      await new Promise(resolve => {
-        if (logo.complete) {
-          resolve();
-        } else {
-          logo.onload = resolve;
-        }
-      });
-
+      await new Promise(resolve => logo.complete ? resolve() : logo.onload = resolve);
       doc.addImage(logo, 'PNG', 150, 10, 40, 20);
 
       doc.setFontSize(18);
       doc.text("Rechnung", 20, 20);
       doc.setFontSize(12);
-      doc.text(`Rechnungsnummer: ${rechnr}`, 20, 30);
-      doc.text(`Datum: ${datum}`, 20, 37);
-      doc.text(`Kunde: ${kunde}`, 20, 47);
-      doc.text(`Adresse: ${adresse}`, 20, 54);
+      doc.text(`Datum: ${datum}`, 20, 30);
+      doc.text(`Kunde: ${kunde}`, 20, 40);
+      doc.text(`Adresse: ${adresse}`, 20, 48);
 
-      let y = 70;
-      let netto = 0;
-
-      doc.text("Artikel", 20, y);
-      doc.text("Menge", 90, y);
-      doc.text("Einzelpreis", 120, y);
-      doc.text("Gesamt", 160, y);
-      y += 7;
-
-      const rows = document.querySelectorAll('#artikelTabelle tbody tr');
-      for (const row of rows) {
-        const name = row.cells[0].querySelector('input[type="text"]').value;
-        const menge = parseFloat(row.cells[1].querySelector('input').value);
-        const preis = parseFloat(row.cells[2].querySelector('input').value);
-        const bildBase64 = row.cells[0].querySelector('input[type="hidden"]').value;
-        const gesamt = menge * preis;
-        netto += gesamt;
-
-        if (bildBase64) {
-          doc.addImage(bildBase64, 'JPEG', 20, y, 20, 20);
-          doc.text(name, 45, y + 5);
-          doc.text(`${menge}`, 95, y + 5);
-          doc.text(`${preis.toFixed(2)} €`, 120, y + 5);
-          doc.text(`${gesamt.toFixed(2)} €`, 160, y + 5);
-          y += 25;
-        } else {
-          doc.text(name, 20, y);
-          doc.text(`${menge}`, 95, y);
-          doc.text(`${preis.toFixed(2)} €`, 120, y);
-          doc.text(`${gesamt.toFixed(2)} €`, 160, y);
-          y += 7;
-        }
-      }
-
-      const mwst = netto * 0.19;
-      const brutto = netto + mwst;
-
-      y += 10;
-      doc.text(`Netto: ${netto.toFixed(2)} €`, 20, y);
-      y += 7;
-      doc.text(`MwSt. (19 %): ${mwst.toFixed(2)} €`, 20, y);
-      y += 7;
-      doc.setFont(undefined, "bold");
-      doc.setFontSize(14);
-      doc.text(`Gesamtbetrag: ${brutto.toFixed(2)} €`, 20, y);
-      doc.setFontSize(12);
-      doc.setFont(undefined, "normal");
-
-      y += 14;
-      doc.setFontSize(10);
-      doc.text("Vielen Dank für Ihren Auftrag!", 20, y);
-      doc.text("darcom24 Restposten", 20, y + 6);
-
-      doc.save(`Rechnung_${rechnr}_${kunde || 'Unbekannt'}.pdf`);
+      doc.save(`Rechnung_${kunde || 'Unbekannt'}.pdf`);
     }
   </script>
+
 </body>
 </html>
