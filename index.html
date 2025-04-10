@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rechnung – darcom24</title>
+  <title>Rechnung erstellen – darcom24</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
@@ -48,6 +48,7 @@
       text-align: left;
     }
     button {
+      width: 100%;
       padding: 1rem;
       background-color: #000;
       color: white;
@@ -55,7 +56,6 @@
       border-radius: 0.5rem;
       font-size: 1rem;
       cursor: pointer;
-      margin-top: 1rem;
     }
     button:hover {
       background-color: #333;
@@ -84,7 +84,7 @@
 </head>
 <body>
   <div class="header">
-    <div class="rechnung-text">Rechnung test</div>
+    <h1>Rechnung erstellen</h1>
     <img src="logo-darcom.png" alt="darcom24 Logo">
   </div>
 
@@ -94,9 +94,22 @@
   <label for="adresse">Adresse</label>
   <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
 
-  <div class="artikel-buttons" id="artikelButtons"></div>
+  <div class="artikel-buttons">
+    <div class="artikel-card" onclick="addArtikel('Teenage Mutant Ninja Turtles Donatello 9,5x12cm', 1, 9.99)">
+      <img src="https://darcom24.de/wp-content/uploads/2024/03/teenage-mutant-ninja-turtles-donatello.jpg" alt="Teenage Mutant Ninja Turtles Donatello">
+      <strong>Teenage Mutant Ninja Turtles Donatello</strong><br>9,99 €
+    </div>
+    <div class="artikel-card" onclick="addArtikel('Clementoni Baby Mickey Maus Auto', 1, 14.99)">
+      <img src="https://darcom24.de/wp-content/uploads/2024/03/clementoni-baby-mickey-maus-auto.jpg" alt="Clementoni Baby Mickey Maus Auto">
+      <strong>Clementoni Baby Mickey Maus Auto</strong><br>14,99 €
+    </div>
+    <div class="artikel-card" onclick="addArtikel('Clementoni 17687 Baby Logik Spiel', 1, 12.99)">
+      <img src="https://darcom24.de/wp-content/uploads/2024/03/clementoni-17687-baby-logik-spiel.jpg" alt="Clementoni 17687 Baby Logik Spiel">
+      <strong>Clementoni 17687 Baby Logik Spiel</strong><br>12,99 €
+    </div>
+  </div>
 
-  <label>Artikel (Name, Menge, Einzelpreis inkl. MwSt)</label>
+  <label for="artikel">Artikel (Name, Menge, Einzelpreis)</label>
   <table id="artikelTabelle">
     <thead>
       <tr>
@@ -115,56 +128,31 @@
       </tr>
     </tbody>
   </table>
-<center>
   <button onclick="addRow()">+ Artikel hinzufügen</button>
   <br><br>
   <button onclick="downloadPDF()">PDF herunterladen</button>
-</center>
-  <script>
-    const artikel = [
-      {
-        name: "Teenage Mutant Ninja Turtles Donatello",
-        preis: 3.50,
-        bild: "https://i0.wp.com/darcom24.de/wp-content/uploads/2025/03/Teenage-mutant-ninja-turtles-donatello.jpeg?fit=1600%2C1600&ssl=1"
-      },
-      {
-        name: "Clementoni Baby Mickey Maus Auto",
-        preis: 14.99,
-        bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-baby-mickey-maus-auto.jpg"
-      },
-      {
-        name: "Clementoni 17687 Baby Logik Spiel",
-        preis: 12.99,
-        bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-17687-baby-logik-spiel.jpg"
-      }
-    ];
 
-    const container = document.getElementById("artikelButtons");
-    artikel.forEach(item => {
-      const card = document.createElement("div");
-      card.className = "artikel-card";
-      card.innerHTML = \`
-        <img src="\${item.bild}" alt="\${item.name}">
-        <strong>\${item.name}</strong><br>\${item.preis.toFixed(2)} €
-      \`;
-      card.addEventListener("click", () => addRow(item.name, 1, item.preis));
-      container.appendChild(card);
-    });
+  <script>
+    let rechnungsnummer = localStorage.getItem('rechnungsnummer') || 1001;
 
     function addRow(name = '', menge = 1, preis = 0) {
-      const table = document.querySelector('#artikelTabelle tbody');
-      const row = document.createElement('tr');
-      row.innerHTML = \`
-        <td><input type="text" value="\${name}" placeholder="Artikel"></td>
-        <td><input type="number" value="\${menge}"></td>
-        <td><input type="number" value="\${preis}"></td>
+      const table = document.getElementById('artikelTabelle').getElementsByTagName('tbody')[0];
+      const row = table.insertRow();
+      row.innerHTML = `
+        <td><input type="text" value="${name}" placeholder="Artikel"></td>
+        <td><input type="number" value="${menge}"></td>
+        <td><input type="number" value="${preis}"></td>
         <td><button onclick="removeRow(this)">✕</button></td>
-      \`;
-      table.appendChild(row);
+      `;
+    }
+
+    function addArtikel(name, menge, preis) {
+      addRow(name, menge, preis);
     }
 
     function removeRow(btn) {
-      btn.closest('tr').remove();
+      const row = btn.parentNode.parentNode;
+      row.parentNode.removeChild(row);
     }
 
     async function downloadPDF() {
@@ -173,59 +161,10 @@
       const kunde = document.getElementById('kunde').value;
       const adresse = document.getElementById('adresse').value;
       const datum = new Date().toLocaleDateString('de-DE');
+      const rechnr = rechnungsnummer++;
+      localStorage.setItem('rechnungsnummer', rechnungsnummer);
 
-      doc.setFontSize(18);
-      doc.text("Rechnung", 20, 20);
-      doc.setFontSize(12);
-      doc.text(\`Datum: \${datum}\`, 20, 30);
-      doc.text(\`Kunde: \${kunde}\`, 20, 40);
-      doc.text(\`Adresse: \${adresse}\`, 20, 48);
-
-      let y = 60;
-      let brutto = 0;
-
-      const rows = document.querySelectorAll('#artikelTabelle tbody tr');
-      rows.forEach(row => {
-        const name = row.cells[0].querySelector('input').value;
-        const menge = parseFloat(row.cells[1].querySelector('input').value);
-        const preis = parseFloat(row.cells[2].querySelector('input').value);
-        const gesamt = menge * preis;
-        brutto += gesamt;
-
-        doc.text(name, 20, y);
-        doc.text(\`\${menge}\`, 95, y);
-        doc.text(\`\${preis.toFixed(2)} €\`, 120, y);
-        doc.text(\`\${gesamt.toFixed(2)} €\`, 160, y);
-        y += 7;
-      });
-
-      const netto = brutto / 1.19;
-      const mwst = brutto - netto;
-
-      y += 10;
-      doc.text(\`Netto: \${netto.toFixed(2)} €\`, 20, y);
-      y += 7;
-      doc.text(\`MwSt. (19 %): \${mwst.toFixed(2)} €\`, 20, y);
-      y += 7;
-      doc.setFont(undefined, "bold");
-      doc.setFontSize(14);
-      doc.text(\`Gesamtbetrag: \${brutto.toFixed(2)} €\`, 20, y);
-      doc.setFontSize(12);
-      doc.setFont(undefined, "normal");
-
-      y += 14;
-      doc.setFontSize(10);
-      doc.text("Vielen Dank für Ihren Auftrag!", 20, y);
-      doc.text("darcom24 Restposten", 20, y + 6);
-
-      doc.save(\`Rechnung_\${kunde || 'Unbekannt'}.pdf\`);
-    }
-
-    // Dynamischer Tab-Titel
-    document.getElementById("kunde").addEventListener("input", function () {
-      const name = this.value.trim();
-      document.title = name ? name : "Rechnung – darcom24";
-    });
-  </script>
-</body>
-</html>
+      const logo = new Image();
+      logo.src
+::contentReference[oaicite:2]{index=2}
+ 
