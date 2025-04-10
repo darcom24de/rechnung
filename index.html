@@ -8,7 +8,7 @@
     body {
       font-family: sans-serif;
       padding: 2rem;
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
     }
     .header {
@@ -18,7 +18,7 @@
       margin-bottom: 2rem;
     }
     .header img {
-      max-width: 150px;
+      max-height: 80px;
     }
     input {
       display: block;
@@ -26,14 +26,48 @@
       width: 100%;
       padding: 0.5rem;
     }
+    .produkte {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .produkt {
+      width: 160px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 0.5rem;
+      text-align: center;
+      cursor: pointer;
+    }
+    .produkt img {
+      max-width: 100%;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+    }
+    table {
+      width: 100%;
+      margin-bottom: 2rem;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: left;
+    }
     button {
-      padding: 0.75rem 1rem;
+      padding: 0.75rem 1.5rem;
       font-size: 1rem;
       cursor: pointer;
       background-color: black;
       color: white;
       border: none;
       border-radius: 0.5rem;
+      margin-right: 1rem;
+    }
+    .total {
+      font-weight: bold;
+      font-size: 1.2rem;
     }
   </style>
 </head>
@@ -41,7 +75,7 @@
 
   <div class="header">
     <h1>Rechnung erstellen</h1>
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAaCAYAAADeIEn9AAAAAXNSR0IArs4c6QAA..." alt="darcom24 Logo">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAABgCAYAAABlEJ9nAAABGklEQVR4nO3QsQnAIBADwVfT96+y...DEINEN_B64_LOGO_HIER_EINFÜGEN..." alt="darcom24 Logo">
   </div>
 
   <label>Kunde:</label>
@@ -49,18 +83,85 @@
   <label>Adresse:</label>
   <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
 
+  <div class="produkte" id="produktListe"></div>
+
+  <table id="artikelTabelle">
+    <thead>
+      <tr><th>Artikel</th><th>Menge</th><th>Einzelpreis (€)</th><th>Gesamt (€)</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="total" id="summe">Gesamt: 0.00 €</div>
+
   <button onclick="downloadPDF()">PDF herunterladen</button>
 
   <script>
-    async function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const kunde = document.getElementById('kunde').value;
-      const adresse = document.getElementById('adresse').value;
-      const datum = new Date().toLocaleDateString('de-DE');
+    const { jsPDF } = window.jspdf;
 
+    const artikel = [
+      {
+        name: "Donatello Figur",
+        preis: 9.99,
+        bild: "https://darcom24.de/wp-content/uploads/2024/03/teenage-mutant-ninja-turtles-donatello.jpg"
+      },
+      {
+        name: "Mickey Maus Auto",
+        preis: 14.99,
+        bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-baby-mickey-maus-auto.jpg"
+      },
+      {
+        name: "Logik Spiel",
+        preis: 12.99,
+        bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-17687-baby-logik-spiel.jpg"
+      }
+    ];
+
+    const liste = document.getElementById("produktListe");
+    const tabelle = document.querySelector("#artikelTabelle tbody");
+    const summeEl = document.getElementById("summe");
+
+    artikel.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "produkt";
+      div.innerHTML = `
+        <img src="${item.bild}" alt="${item.name}">
+        <div><strong>${item.name}</strong><br>${item.preis.toFixed(2)} €</div>
+      `;
+      div.onclick = () => addProdukt(item.name, 1, item.preis);
+      liste.appendChild(div);
+    });
+
+    function addProdukt(name, menge, preis) {
+      const row = document.createElement("tr");
+      const gesamt = (menge * preis).toFixed(2);
+      row.innerHTML = `
+        <td>${name}</td>
+        <td>${menge}</td>
+        <td>${preis.toFixed(2)}</td>
+        <td>${gesamt}</td>
+        <td><button onclick="this.closest('tr').remove(); berechneSumme()">✕</button></td>
+      `;
+      tabelle.appendChild(row);
+      berechneSumme();
+    }
+
+    function berechneSumme() {
+      let total = 0;
+      tabelle.querySelectorAll("tr").forEach(tr => {
+        const zelle = tr.cells[3];
+        if (zelle) total += parseFloat(zelle.textContent || 0);
+      });
+      summeEl.textContent = "Gesamt: " + total.toFixed(2) + " €";
+    }
+
+    async function downloadPDF() {
+      const doc = new jsPDF();
+      const kunde = document.getElementById("kunde").value;
+      const adresse = document.getElementById("adresse").value;
+      const datum = new Date().toLocaleDateString('de-DE');
       const logo = new Image();
-      logo.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAaCAYAAADeIEn9AAAAAXNSR0IArs4c6QAA...";
+      logo.src = "data:image/png;base64,DEINEN_B64_LOGO_HIER_EINFÜGEN";
 
       await new Promise(resolve => logo.complete ? resolve() : logo.onload = resolve);
       doc.addImage(logo, 'PNG', 150, 10, 40, 20);
@@ -71,6 +172,38 @@
       doc.text(`Datum: ${datum}`, 20, 30);
       doc.text(`Kunde: ${kunde}`, 20, 40);
       doc.text(`Adresse: ${adresse}`, 20, 48);
+
+      let y = 60;
+      let brutto = 0;
+
+      tabelle.querySelectorAll("tr").forEach(tr => {
+        const name = tr.cells[0].textContent;
+        const menge = parseInt(tr.cells[1].textContent);
+        const preis = parseFloat(tr.cells[2].textContent);
+        const gesamt = parseFloat(tr.cells[3].textContent);
+        brutto += gesamt;
+
+        doc.text(`${name}`, 20, y);
+        doc.text(`${menge}`, 90, y);
+        doc.text(`${preis.toFixed(2)} €`, 120, y);
+        doc.text(`${gesamt.toFixed(2)} €`, 160, y);
+        y += 7;
+      });
+
+      const netto = brutto / 1.19;
+      const mwst = brutto - netto;
+
+      y += 10;
+      doc.text(`Netto: ${netto.toFixed(2)} €`, 20, y);
+      y += 7;
+      doc.text(`MwSt. (19 %): ${mwst.toFixed(2)} €`, 20, y);
+      y += 7;
+      doc.setFont(undefined, "bold");
+      doc.text(`Gesamtbetrag: ${brutto.toFixed(2)} €`, 20, y);
+      doc.setFont(undefined, "normal");
+
+      y += 10;
+      doc.text("Vielen Dank für Ihren Auftrag!", 20, y);
 
       doc.save(`Rechnung_${kunde || 'Unbekannt'}.pdf`);
     }
