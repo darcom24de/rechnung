@@ -2,14 +2,11 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rechnung erstellen – darcom24</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>Rechnung – darcom24</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
-      font-family: 'Inter', sans-serif;
-      background: #fff;
+      font-family: sans-serif;
       padding: 2rem;
       max-width: 800px;
       margin: auto;
@@ -23,148 +20,61 @@
     .header img {
       max-width: 150px;
     }
-    h1 {
-      text-align: left;
-      margin: 0;
-    }
-    label {
-      font-weight: 600;
-    }
     input {
-      width: 100%;
-      padding: 0.75rem;
+      display: block;
       margin-bottom: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 0.5rem;
-    }
-    table {
       width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 1rem;
-    }
-    th, td {
-      border: 1px solid #ccc;
       padding: 0.5rem;
-      text-align: left;
     }
     button {
-      width: 100%;
-      padding: 1rem;
-      background-color: #000;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: black;
       color: white;
       border: none;
       border-radius: 0.5rem;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #333;
-    }
-    .artikel-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin: 1rem 0;
-    }
-    .artikel-card {
-      border: 1px solid #ccc;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      width: 150px;
-      text-align: center;
-      cursor: pointer;
-    }
-    .artikel-card img {
-      width: 100%;
-      height: auto;
-      border-radius: 0.5rem;
-      margin-bottom: 0.5rem;
     }
   </style>
 </head>
 <body>
+
   <div class="header">
     <h1>Rechnung erstellen</h1>
-    <img src="logo-darcom.png" alt="darcom24 Logo">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAaCAYAAADeIEn9AAAAAXNSR0IArs4c6QAA..." alt="darcom24 Logo">
   </div>
 
-  <label for="kunde">Kunde</label>
+  <label>Kunde:</label>
   <input type="text" id="kunde" placeholder="Kundenname">
-
-  <label for="adresse">Adresse</label>
+  <label>Adresse:</label>
   <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
 
-  <div class="artikel-buttons">
-    <div class="artikel-card" onclick="addArtikel('Teenage Mutant Ninja Turtles Donatello 9,5x12cm', 1, 9.99)">
-      <img src="https://darcom24.de/wp-content/uploads/2024/03/teenage-mutant-ninja-turtles-donatello.jpg" alt="Teenage Mutant Ninja Turtles Donatello">
-      <strong>Teenage Mutant Ninja Turtles Donatello</strong><br>9,99 €
-    </div>
-    <div class="artikel-card" onclick="addArtikel('Clementoni Baby Mickey Maus Auto', 1, 14.99)">
-      <img src="https://darcom24.de/wp-content/uploads/2024/03/clementoni-baby-mickey-maus-auto.jpg" alt="Clementoni Baby Mickey Maus Auto">
-      <strong>Clementoni Baby Mickey Maus Auto</strong><br>14,99 €
-    </div>
-    <div class="artikel-card" onclick="addArtikel('Clementoni 17687 Baby Logik Spiel', 1, 12.99)">
-      <img src="https://darcom24.de/wp-content/uploads/2024/03/clementoni-17687-baby-logik-spiel.jpg" alt="Clementoni 17687 Baby Logik Spiel">
-      <strong>Clementoni 17687 Baby Logik Spiel</strong><br>12,99 €
-    </div>
-  </div>
-
-  <label for="artikel">Artikel (Name, Menge, Einzelpreis)</label>
-  <table id="artikelTabelle">
-    <thead>
-      <tr>
-        <th>Artikel</th>
-        <th>Menge</th>
-        <th>Einzelpreis (€)</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><input type="text" placeholder="z. B. Monitor"></td>
-        <td><input type="number" value="1"></td>
-        <td><input type="number" value="0"></td>
-        <td><button onclick="removeRow(this)">✕</button></td>
-      </tr>
-    </tbody>
-  </table>
-  <button onclick="addRow()">+ Artikel hinzufügen</button>
-  <br><br>
   <button onclick="downloadPDF()">PDF herunterladen</button>
 
   <script>
-    let rechnungsnummer = localStorage.getItem('rechnungsnummer') || 1001;
-
-    function addRow(name = '', menge = 1, preis = 0) {
-      const table = document.getElementById('artikelTabelle').getElementsByTagName('tbody')[0];
-      const row = table.insertRow();
-      row.innerHTML = `
-        <td><input type="text" value="${name}" placeholder="Artikel"></td>
-        <td><input type="number" value="${menge}"></td>
-        <td><input type="number" value="${preis}"></td>
-        <td><button onclick="removeRow(this)">✕</button></td>
-      `;
-    }
-
-    function addArtikel(name, menge, preis) {
-      addRow(name, menge, preis);
-    }
-
-    function removeRow(btn) {
-      const row = btn.parentNode.parentNode;
-      row.parentNode.removeChild(row);
-    }
-
     async function downloadPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       const kunde = document.getElementById('kunde').value;
       const adresse = document.getElementById('adresse').value;
       const datum = new Date().toLocaleDateString('de-DE');
-      const rechnr = rechnungsnummer++;
-      localStorage.setItem('rechnungsnummer', rechnungsnummer);
 
       const logo = new Image();
-      logo.src
-::contentReference[oaicite:2]{index=2}
- 
+      logo.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAaCAYAAADeIEn9AAAAAXNSR0IArs4c6QAA...";
+
+      await new Promise(resolve => logo.complete ? resolve() : logo.onload = resolve);
+      doc.addImage(logo, 'PNG', 150, 10, 40, 20);
+
+      doc.setFontSize(18);
+      doc.text("Rechnung", 20, 20);
+      doc.setFontSize(12);
+      doc.text(`Datum: ${datum}`, 20, 30);
+      doc.text(`Kunde: ${kunde}`, 20, 40);
+      doc.text(`Adresse: ${adresse}`, 20, 48);
+
+      doc.save(`Rechnung_${kunde || 'Unbekannt'}.pdf`);
+    }
+  </script>
+
+</body>
+</html>
