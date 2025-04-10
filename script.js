@@ -47,3 +47,10 @@ function addItem(name, menge, einzelpreis) {
     listItem.textContent = `${name} - Menge: ${menge}, Einzelpreis: ${einzelpreis}€`;
     rechnungsliste.appendChild(listItem);
 }
+function downloadPDF() {
+  alert("PDF download button clicked!"); // ADD THIS LINE
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  // ... the rest of your PDF creation code ...
+}
