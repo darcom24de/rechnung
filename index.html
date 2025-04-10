@@ -1,178 +1,249 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Rechnung – darcom24</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-      max-width: 800px;
-      margin: auto;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
-    .header img {
-      max-width: 150px;
-    }
-    input, select {
-      display: block;
-      margin-bottom: 1rem;
-      width: 100%;
-      padding: 0.5rem;
-    }
-    button {
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      cursor: pointer;
-      background-color: black;
-      color: white;
-      border: none;
-      border-radius: 0.5rem;
-      margin-right: 0.5rem;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 1rem;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 0.5rem;
-      text-align: left;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    .artikel-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin: 1rem 0;
-    }
-    .artikel-card {
-      border: 1px solid #ccc;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      width: 150px;
-      text-align: center;
-      cursor: pointer;
-    }
-    .artikel-card img {
-      width: 100%;
-      height: auto;
-      border-radius: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Rechnung – darcom24</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2rem;
+            max-width: 800px;
+            margin: auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .header img {
+            max-width: 150px;
+        }
+        input, select {
+            display: block;
+            margin-bottom: 1rem;
+            width: 100%;
+            padding: 0.5rem;
+        }
+        button {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            margin-right: 0.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .artikel-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .artikel-card {
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            width: 150px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .artikel-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>Rechnung erstellen</h1>
-    <img src="logo-darcom.png" alt="darcom24 Logo">
-  </div>
+    <div class="header">
+        <h1>Rechnung erstellen</h1>
+        <img src="logo-darcom.png" alt="darcom24 Logo">
+    </div>
 
-  <label for="kunde">Kunde:</label>
-  <input type="text" id="kunde" placeholder="Kundenname">
+    <label for="kunde">Kunde:</label>
+    <input type="text" id="kunde" placeholder="Kundenname">
 
-  <label for="adresse">Adresse:</label>
-  <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
+    <label for="adresse">Adresse:</label>
+    <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
 
-  <div class="artikel-buttons" id="artikelButtons"></div>
+    <div class="artikel-buttons" id="artikelButtons"></div>
 
-  <label>Artikel (Name, Menge, Einzelpreis inkl. MwSt):</label>
-  <table id="artikelTabelle">
-    <thead>
-      <tr>
-        <th>Artikel</th>
-        <th>Menge</th>
-        <th>Einzelpreis (€)</th>
-        <th>Gesamtpreis (€)</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Artikelzeilen werden hier eingefügt -->
-    </tbody>
-  </table>
+    <label>Artikel (Name, Menge, Einzelpreis inkl. MwSt):</label>
+    <table id="artikelTabelle">
+        <thead>
+            <tr>
+                <th>Artikel</th>
+                <th>Menge</th>
+                <th>Einzelpreis (€)</th>
+                <th>Gesamtpreis (€)</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
 
-  <button onclick="addRow()">+ Artikel hinzufügen</button>
-  <button onclick="downloadPDF()">PDF herunterladen</button>
+    <button onclick="addRow()">+ Artikel hinzufügen</button>
+    <button onclick="downloadPDF()">PDF herunterladen</button>
+    <button onclick="window.print()">Drucken</button>
 
-  <script>
-    const artikel = [
-      {
-        name: "Teenage Mutant Ninja Turtles Donatello",
-        preis: 9.99,
-        bild: "https://darcom24.de/wp-content/uploads/2024/03/teenage-mutant-ninja-turtles-donatello.jpg"
-      },
-      {
-        name: "Clementoni Baby Mickey Maus Auto",
-        preis: 14.99,
-        bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-baby-mickey-maus-auto.jpg"
-      },
-      {
-        name: "Clementoni 17687 Baby Logik Spiel",
-        preis: 12.99,
-        bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-17687-baby-logik-spiel.jpg"
-      }
-    ];
+    <script>
+        const artikel = [
+            {
+                name: "Teenage Mutant Ninja Turtles Donatello",
+                preis: 9.99,
+                bild: "https://darcom24.de/wp-content/uploads/2024/03/teenage-mutant-ninja-turtles-donatello.jpg"
+            },
+            {
+                name: "Clementoni Baby Mickey Maus Auto",
+                preis: 14.99,
+                bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-baby-mickey-maus-auto.jpg"
+            },
+            {
+                name: "Clementoni 17687 Baby Logik Spiel",
+                preis: 12.99,
+                bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-17687-baby-logik-spiel.jpg"
+            }
+        ];
 
-    const container = document.getElementById("artikelButtons");
-    artikel.forEach(item => {
-      const card = document.createElement("div");
-      card.className = "artikel-card";
-      card.innerHTML = `
-        <img src="${item.bild}" alt="${item.name}">
-        <strong>${item.name}</strong><br>${item.preis.toFixed(2)} €
-      `;
-      card.addEventListener("click", () => addRow(item.name, 1, item.preis));
-      container.appendChild(card);
-    });
+        const container = document.getElementById("artikelButtons");
+        artikel.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "artikel-card";
+            card.innerHTML = `
+                <img src="${item.bild}" alt="${item.name}">
+                <strong>${item.name}</strong><br>${item.preis.toFixed(2)} €
+            `;
+            card.addEventListener("click", () => addRow(item.name, 1, item.preis));
+            container.appendChild(card);
+        });
 
-    function addRow(name = '', menge = 1, preis = 0) {
-      const table = document.querySelector('#artikelTabelle tbody');
-      let existingRow = null;
+        function addRow(name = '', menge = 1, preis = 0) {
+            const table = document.querySelector('#artikelTabelle tbody');
+            let existingRow = null;
 
-      // Überprüfen, ob der Artikel bereits in der Tabelle existiert
-      table.querySelectorAll('tr').forEach(row => {
-        const artikelName = row.cells[0].querySelector('input').value;
-        if (artikelName === name) {
-          existingRow = row;
+            // Überprüfen, ob der Artikel bereits in der Tabelle existiert
+            table.querySelectorAll('tr').forEach(row => {
+                const artikelName = row.cells[0].querySelector('input').value;
+                if (artikelName === name) {
+                    existingRow = row;
+                }
+            });
+
+            if (existingRow) {
+                // Wenn der Artikel bereits existiert, aktualisiere die Menge und den Gesamtpreis
+                const mengeInput = existingRow.cells[1].querySelector('input');
+                const gesamtpreisCell = existingRow.cells[3];
+                let aktuelleMenge = parseInt(mengeInput.value);
+                mengeInput.value = aktuelleMenge + menge;
+                gesamtpreisCell.textContent = ((aktuelleMenge + menge) * preis).toFixed(2) + ' €';
+            } else {
+                // Andernfalls füge eine neue Zeile hinzu
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="text" value="${name}" placeholder="Artikel"></td>
+                    <td><input type="number" value="${menge}" min="1" onchange="updateGesamtpreis(this)"></td>
+                    <td><input type="number" value="${preis}" min="0" step="0.01" onchange="updateGesamtpreis(this)"></td>
+                    <td>${(menge * preis).toFixed(2)} €</td>
+                    <td><button onclick="removeRow(this)">✕</button></td>
+                `;
+                table.appendChild(row);
+            }
+            updateTotalSum(); // Aktualisiere die Gesamtsumme nach dem Hinzufügen einer Zeile
         }
-      });
 
-      if (existingRow) {
-        // Wenn der Artikel bereits existiert, aktualisiere die Menge und den Gesamtpreis
-        const mengeInput = existingRow.cells[1].querySelector('input');
-        const gesamtpreisCell = existingRow.cells[3];
-        let aktuelleMenge = parseInt(mengeInput.value);
-        mengeInput.value = aktuelleMenge + menge;
-        gesamtpreisCell.textContent = ((aktuelleMenge + menge) * preis).toFixed(2) + ' €';
-      } else {
-        // Andernfalls füge eine neue Zeile hinzu
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><input type="text" value="${name}" placeholder="Artikel"></td>
-          <td><input type="number" value="${menge}" min="1" onchange="updateGesamtpreis(this)"></td>
-          <td><input type="number" value="${preis}" min="0" step="0.01" onchange="updateGesamtpreis(this)"></td>
-          <td>${(menge * preis).toFixed(2)} €</td>
-          <td><button onclick="removeRow(this)">✕</button></td>
-        `;
-        table.appendChild(row);
-      }
-    }
+        function removeRow(btn) {
+            btn.closest('tr').remove();
+            updateTotalSum(); // Aktualisiere die Gesamtsumme nach dem Entfernen einer Zeile
+        }
 
-    function removeRow(btn) {
-      btn.closest('tr').remove();
-    }
+        function updateGesamtpreis(input) {
+            const row = input.closest('tr');
+            const mengeInput = row.cells[1].querySelector('input');
+            const preisInput = row.cells[2].querySelector('input');
+            const gesamtpreisCell = row.cells[3];
 
-    function updateGesamtpreis(input) {
-      const row = input.closest('tr');
-      const menge = parse
+            const menge = parseInt(mengeInput.value) || 0;
+            const preis = parseFloat(preisInput.value) || 0;
+            gesamtpreisCell.textContent = (menge * preis).toFixed(2) + ' €';
+            updateTotalSum(); // Aktualisiere die Gesamtsumme, wenn sich ein Preis ändert
+        }
+
+        function updateTotalSum() {
+            let total = 0;
+            const table = document.querySelector('#artikelTabelle tbody');
+            table.querySelectorAll('tr').forEach(row => {
+                const gesamtpreisCell = row.cells[3];
+                const preisText = gesamtpreisCell.textContent;
+                const preis = parseFloat(preisText.replace(' €', '')) || 0;
+                total += preis;
+            });
+
+            // Füge die Gesamtsumme zur Anzeige hinzu (du könntest ein neues Element im HTML dafür erstellen)
+            // Zum Beispiel:
+            let gesamtSummeElement = document.getElementById('gesamtSumme');
+            if (!gesamtSummeElement) {
+                gesamtSummeElement = document.createElement('div');
+                gesamtSummeElement.id = 'gesamtSumme';
+                document.querySelector('table').after(gesamtSummeElement);
+            }
+            gesamtSummeElement.textContent = `Gesamtsumme: ${total.toFixed(2)} €`;
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+
+            const kunde = document.getElementById('kunde').value;
+            const adresse = document.getElementById('adresse').value;
+            const table = document.getElementById('artikelTabelle');
+
+            pdf.text(`Rechnung`, 10, 10);
+            pdf.text(`Kunde: ${kunde}`, 10, 20);
+            pdf.text(`Adresse: ${adresse}`, 10, 30);
+            pdf.setFontSize(12);
+
+            const headers = [];
+            for (let i = 0; i < table.rows[0].cells.length - 1; i++) { // -1 to exclude the remove button
+                headers.push(table.rows[0].cells[i].textContent);
+            }
+
+            const data = [];
+            for (let i = 1; i < table.rows.length; i++) {
+                const rowData = [];
+                for (let j = 0; j < table.rows[i].cells.length - 1; j++) { // -1 to exclude the remove button
+                    const input = table.rows[i].cells[j].querySelector('input');
+                    rowData.push(input ? input.value : table.rows[i].cells[j].textContent);
+                }
+                data.push(rowData);
+            }
+
+            pdf.autoTable({
+                head: [headers],
+                body: data,
+                startY: 40,
+            });
+
+            pdf.save(`rechnung_${kunde.replace(/\s+/g, '_') || 'unbenannt'}.pdf`);
+        }
+    </script>
+</body>
+</html>
