@@ -47,7 +47,3 @@ function addItem(name, menge, einzelpreis) {
     listItem.textContent = `${name} - Menge: ${menge}, Einzelpreis: ${einzelpreis}€`;
     rechnungsliste.appendChild(listItem);
 }
-document.getElementById("kundenname").addEventListener("input", function () {
-    const name = this.value.trim();
-    document.title = name ? name : "Rechnung"; // Fallback, falls das Feld leer ist
-});
