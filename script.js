@@ -48,9 +48,16 @@ function addItem(name, menge, einzelpreis) {
     rechnungsliste.appendChild(listItem);
 }
 function downloadPDF() {
-  alert("PDF download button clicked!"); // ADD THIS LINE
+  alert("PDF download button clicked!"); // Diese Zeile kannst du zum Testen drin lassen
+
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF();
 
+  // Füge hier den Inhalt für deine PDF hinzu
+  pdf.text("Rechnung", 10, 10); // Text an der Position (10, 10)
+
+  // Speichere die PDF und starte den Download
+  pdf.save("rechnung.pdf");
+}
   // ... the rest of your PDF creation code ...
 }
