@@ -124,7 +124,7 @@
     const artikel = [
       {
         name: "Teenage Mutant Ninja Turtles Donatello",
-        preis: 3,50,
+        preis: 3.50,
         bild: "https://i0.wp.com/darcom24.de/wp-content/uploads/2025/03/Teenage-mutant-ninja-turtles-donatello.jpeg?fit=1600%2C1600&ssl=1"
       },
       {
@@ -143,10 +143,10 @@
     artikel.forEach(item => {
       const card = document.createElement("div");
       card.className = "artikel-card";
-      card.innerHTML = `
-        <img src="${item.bild}" alt="${item.name}">
-        <strong>${item.name}</strong><br>${item.preis.toFixed(2)} €
-      `;
+      card.innerHTML = \`
+        <img src="\${item.bild}" alt="\${item.name}">
+        <strong>\${item.name}</strong><br>\${item.preis.toFixed(2)} €
+      \`;
       card.addEventListener("click", () => addRow(item.name, 1, item.preis));
       container.appendChild(card);
     });
@@ -154,12 +154,12 @@
     function addRow(name = '', menge = 1, preis = 0) {
       const table = document.querySelector('#artikelTabelle tbody');
       const row = document.createElement('tr');
-      row.innerHTML = `
-        <td><input type="text" value="${name}" placeholder="Artikel"></td>
-        <td><input type="number" value="${menge}"></td>
-        <td><input type="number" value="${preis}"></td>
+      row.innerHTML = \`
+        <td><input type="text" value="\${name}" placeholder="Artikel"></td>
+        <td><input type="number" value="\${menge}"></td>
+        <td><input type="number" value="\${preis}"></td>
         <td><button onclick="removeRow(this)">✕</button></td>
-      `;
+      \`;
       table.appendChild(row);
     }
 
@@ -177,9 +177,9 @@
       doc.setFontSize(18);
       doc.text("Rechnung", 20, 20);
       doc.setFontSize(12);
-      doc.text(`Datum: ${datum}`, 20, 30);
-      doc.text(`Kunde: ${kunde}`, 20, 40);
-      doc.text(`Adresse: ${adresse}`, 20, 48);
+      doc.text(\`Datum: \${datum}\`, 20, 30);
+      doc.text(\`Kunde: \${kunde}\`, 20, 40);
+      doc.text(\`Adresse: \${adresse}\`, 20, 48);
 
       let y = 60;
       let brutto = 0;
@@ -193,9 +193,9 @@
         brutto += gesamt;
 
         doc.text(name, 20, y);
-        doc.text(`${menge}`, 95, y);
-        doc.text(`${preis.toFixed(2)} €`, 120, y);
-        doc.text(`${gesamt.toFixed(2)} €`, 160, y);
+        doc.text(\`\${menge}\`, 95, y);
+        doc.text(\`\${preis.toFixed(2)} €\`, 120, y);
+        doc.text(\`\${gesamt.toFixed(2)} €\`, 160, y);
         y += 7;
       });
 
@@ -203,13 +203,13 @@
       const mwst = brutto - netto;
 
       y += 10;
-      doc.text(`Netto: ${netto.toFixed(2)} €`, 20, y);
+      doc.text(\`Netto: \${netto.toFixed(2)} €\`, 20, y);
       y += 7;
-      doc.text(`MwSt. (19 %): ${mwst.toFixed(2)} €`, 20, y);
+      doc.text(\`MwSt. (19 %): \${mwst.toFixed(2)} €\`, 20, y);
       y += 7;
       doc.setFont(undefined, "bold");
       doc.setFontSize(14);
-      doc.text(`Gesamtbetrag: ${brutto.toFixed(2)} €`, 20, y);
+      doc.text(\`Gesamtbetrag: \${brutto.toFixed(2)} €\`, 20, y);
       doc.setFontSize(12);
       doc.setFont(undefined, "normal");
 
@@ -218,8 +218,14 @@
       doc.text("Vielen Dank für Ihren Auftrag!", 20, y);
       doc.text("darcom24 Restposten", 20, y + 6);
 
-      doc.save(`Rechnung_${kunde || 'Unbekannt'}.pdf`);
+      doc.save(\`Rechnung_\${kunde || 'Unbekannt'}.pdf\`);
     }
+
+    // Dynamischer Tab-Titel
+    document.getElementById("kunde").addEventListener("input", function () {
+      const name = this.value.trim();
+      document.title = name ? name : "Rechnung – darcom24";
+    });
   </script>
 </body>
 </html>
