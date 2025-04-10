@@ -20,38 +20,10 @@
     .header img {
       max-width: 150px;
     }
-    input {
+    input, select {
       display: block;
       margin-bottom: 1rem;
       width: 100%;
-      padding: 0.5rem;
-    }
-    .artikel-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin: 2rem 0;
-    }
-    .artikel-card {
-      width: 140px;
-      border: 1px solid #ccc;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      text-align: center;
-      cursor: pointer;
-    }
-    .artikel-card img {
-      width: 100%;
-      height: auto;
-      border-radius: 0.5rem;
-    }
-    table {
-      width: 100%;
-      margin-bottom: 1rem;
-      border-collapse: collapse;
-    }
-    th, td {
-      border: 1px solid #ccc;
       padding: 0.5rem;
     }
     button {
@@ -62,7 +34,40 @@
       color: white;
       border: none;
       border-radius: 0.5rem;
-      margin-top: 1rem;
+      margin-right: 0.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .artikel-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .artikel-card {
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      width: 150px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .artikel-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
@@ -70,28 +75,34 @@
 
   <div class="header">
     <h1>Rechnung erstellen</h1>
-    <img src="logo-darcom.png" alt="darcom24 Logo" id="logo">
+    <img src="logo-darcom.png" alt="darcom24 Logo">
   </div>
 
-  <label>Kunde:</label>
+  <label for="kunde">Kunde:</label>
   <input type="text" id="kunde" placeholder="Kundenname">
-  <label>Adresse:</label>
+
+  <label for="adresse">Adresse:</label>
   <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
 
   <div class="artikel-buttons" id="artikelButtons"></div>
 
+  <label>Artikel (Name, Menge, Einzelpreis inkl. MwSt):</label>
   <table id="artikelTabelle">
     <thead>
       <tr>
         <th>Artikel</th>
         <th>Menge</th>
-        <th>Einzelpreis</th>
+        <th>Einzelpreis (€)</th>
+        <th>Gesamtpreis (€)</th>
         <th></th>
       </tr>
     </thead>
-    <tbody></tbody>
+    <tbody>
+      <!-- Artikelzeilen werden hier eingefügt -->
+    </tbody>
   </table>
 
+  <button onclick="addRow()">+ Artikel hinzufügen</button>
   <button onclick="downloadPDF()">PDF herunterladen</button>
 
   <script>
@@ -114,53 +125,54 @@
     ];
 
     const container = document.getElementById("artikelButtons");
-    const tabelle = document.querySelector('#artikelTabelle tbody');
-
     artikel.forEach(item => {
       const card = document.createElement("div");
       card.className = "artikel-card";
-      card.innerHTML = `<img src="${item.bild}"><br><strong>${item.name}</strong><br>${item.preis.toFixed(2)} €`;
-      card.addEventListener("click", () => addOrUpdateItem(item.name, item.preis));
+      card.innerHTML = `
+        <img src="${item.bild}" alt="${item.name}">
+        <strong>${item.name}</strong><br>${item.preis.toFixed(2)} €
+      `;
+      card.addEventListener("click", () => addRow(item.name, 1, item.preis));
       container.appendChild(card);
     });
 
-    function addOrUpdateItem(name, preis) {
-      const rows = tabelle.querySelectorAll("tr");
-      for (const row of rows) {
-        const input = row.cells[0].querySelector('input');
-        if (input.value === name) {
-          const mengeFeld = row.cells[1].querySelector('input');
-          mengeFeld.value = parseInt(mengeFeld.value) + 1;
-          return;
-        }
-      }
+    function addRow(name = '', menge = 1, preis = 0) {
+      const table = document.querySelector('#artikelTabelle tbody');
+      let existingRow = null;
 
-      const newRow = document.createElement("tr");
-      newRow.innerHTML = `
-        <td><input type="text" value="${name}"></td>
-        <td><input type="number" value="1" min="1"></td>
-        <td><input type="number" value="${preis}" step="0.01"></td>
-        <td><button onclick="this.closest('tr').remove()">✕</button></td>
-      `;
-      tabelle.appendChild(newRow);
+      // Überprüfen, ob der Artikel bereits in der Tabelle existiert
+      table.querySelectorAll('tr').forEach(row => {
+        const artikelName = row.cells[0].querySelector('input').value;
+        if (artikelName === name) {
+          existingRow = row;
+        }
+      });
+
+      if (existingRow) {
+        // Wenn der Artikel bereits existiert, aktualisiere die Menge und den Gesamtpreis
+        const mengeInput = existingRow.cells[1].querySelector('input');
+        const gesamtpreisCell = existingRow.cells[3];
+        let aktuelleMenge = parseInt(mengeInput.value);
+        mengeInput.value = aktuelleMenge + menge;
+        gesamtpreisCell.textContent = ((aktuelleMenge + menge) * preis).toFixed(2) + ' €';
+      } else {
+        // Andernfalls füge eine neue Zeile hinzu
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input type="text" value="${name}" placeholder="Artikel"></td>
+          <td><input type="number" value="${menge}" min="1" onchange="updateGesamtpreis(this)"></td>
+          <td><input type="number" value="${preis}" min="0" step="0.01" onchange="updateGesamtpreis(this)"></td>
+          <td>${(menge * preis).toFixed(2)} €</td>
+          <td><button onclick="removeRow(this)">✕</button></td>
+        `;
+        table.appendChild(row);
+      }
     }
 
-    async function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const kunde = document.getElementById("kunde").value;
-      const adresse = document.getElementById("adresse").value;
-      const datum = new Date().toLocaleDateString("de-DE");
+    function removeRow(btn) {
+      btn.closest('tr').remove();
+    }
 
-      const logoImg = document.getElementById("logo");
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      canvas.width = logoImg.width;
-      canvas.height = logoImg.height;
-      ctx.drawImage(logoImg, 0, 0);
-      const logoDataUrl = canvas.toDataURL();
-
-      doc.addImage(logoDataUrl, 'PNG', 150, 10, 40, 20);
-      doc.setFontSize(18);
-      doc.text("Rechnung", 20, 20);
-      doc.set
+    function updateGesamtpreis(input) {
+      const row = input.closest('tr');
+      const menge = parse
