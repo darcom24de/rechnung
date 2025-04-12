@@ -59,5 +59,9 @@ function downloadPDF() {
   // Speichere die PDF und starte den Download
   pdf.save("rechnung.pdf");
 }
-  // ... the rest of your PDF creation code ...
+  // Alte Zeile
+doc.output('dataurlnewwindow');
+
+// Neue Zeile
+window.open(doc.output('bloburl'));
 }
