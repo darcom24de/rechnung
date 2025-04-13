@@ -99,3 +99,16 @@ doc.output('dataurlnewwindow');
 // Neue Zeile
 window.open(doc.output('bloburl'));
 }
+function getNextInvoiceNumber() {
+  const key = 'invoiceNumber';
+  let currentNumber = localStorage.getItem(key);
+
+  if (!currentNumber) {
+    currentNumber = 1; // Startnummer
+  } else {
+    currentNumber = parseInt(currentNumber) + 1;
+  }
+
+  localStorage.setItem(key, currentNumber);
+  return currentNumber.toString().padStart(5, '0'); // z. B. 00001, 00002
+}
