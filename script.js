@@ -104,11 +104,19 @@ function getNextInvoiceNumber() {
   let currentNumber = localStorage.getItem(key);
 
   if (!currentNumber) {
-    currentNumber = 1; // Startnummer
+    currentNumber = 1;
   } else {
     currentNumber = parseInt(currentNumber) + 1;
   }
 
   localStorage.setItem(key, currentNumber);
-  return currentNumber.toString().padStart(5, '0'); // z. B. 00001, 00002
+  return currentNumber.toString().padStart(5, '0');
+}
+
+function sanitizeFilename(name) {
+  return name.replace(/[^a-z0-9_\-äöüÄÖÜß]/gi, '_');
+}
+
+function resetInvoiceNumber() {
+  localStorage.removeItem('invoiceNumber');
 }
