@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-      <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <title>Rechnung – darcom24</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-      <style>
+    <style>
         body {
             font-family: sans-serif;
             padding: 2rem;
@@ -69,213 +69,234 @@
             height: auto;
             border-radius: 0.5rem;
             margin-bottom: 0.5rem;
-
         }
-         .summe-box {
-        text-align: right;
-        font-size: 1rem;
-        margin-top: 1rem;
+        .summe-box {
+            text-align: right;
+            font-size: 1rem;
+            margin-top: 1rem;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Rechnung</h1>
-        <img src="logo-darcom.png" alt="darcom24 Logo">
-    </div>
+<div class="header">
+    <h1>Rechnung</h1>
+    <img src="logo-darcom.png" alt="darcom24 Logo">
+</div>
 
-    <label for="kunde">Kunde:</label>
-    <input type="text" id="kunde" placeholder="Kundenname">
+<label for="kunde">Kunde:</label>
+<input type="text" id="kunde" placeholder="Kundenname">
 
-    <label for="adresse">Adresse:</label>
-    <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
+<label for="adresse">Adresse:</label>
+<input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
 
-    
+<label>Artikel (Pos, Name, Menge, Einzelpreis inkl. MwSt):</label>
+<table id="artikelTabelle">
+    <thead>
+    <tr>
+        <th>Pos</th>
+        <th>Artikel</th>
+        <th>Menge</th>
+        <th>Einzelpreis (€)</th>
+        <th>Gesamtpreis (€)</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
 
-    <label>Artikel (Pos, Name, Menge, Einzelpreis inkl. MwSt):</label>
-    <table id="artikelTabelle">
-        <thead>
-            <tr>
-                <th>Pos</th>
-                <th>Artikel</th>
-                <th>Menge</th>
-                <th>Einzelpreis (€)</th>
-                <th>Gesamtpreis (€)</th><br>
-            <th></th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-<br>
-    <button onclick="window.print()">Drucken</button>
-    <button id="exportCSV">CSV Export</button>
-    <button onclick="downloadPDF()">PDF herunterladen</button>
-    <button onclick="addRow()">+ Artikel hinzufügen</button>
-    
-    <script>
-        const artikel = [
-            {
-                name: "Teenage Mutant Ninja Turtles Donatello",
-                preis: 9.99,
-                bild: "https://darcom24.de/wp-content/uploads/2024/03/teenage-mutant-ninja-turtles-donatello.jpg"
-            },
-            {
-                name: "Clementoni Baby Mickey Maus Auto",
-                preis: 14.99,
-                bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-baby-mickey-maus-auto.jpg"
-            },
-            {
-                name: "Clementoni 17687 Baby Logik Spiel",
-                preis: 12.99,
-                bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-17687-baby-logik-spiel.jpg"
+<div class="artikel-buttons" id="artikelButtons"></div>
+
+<button onclick="window.print()">Drucken</button>
+<button id="exportCSV">CSV Export</button>
+<button onclick="downloadPDF()">PDF herunterladen</button>
+<button onclick="addRow()">+ Artikel hinzufügen</button>
+
+<script>
+    const artikel = [
+        {
+            name: "Teenage Mutant Ninja Turtles Donatello",
+            preis: 9.99,
+            bild: "https://darcom24.de/wp-content/uploads/2024/03/teenage-mutant-ninja-turtles-donatello.jpg"
+        },
+        {
+            name: "Clementoni Baby Mickey Maus Auto",
+            preis: 14.99,
+            bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-baby-mickey-maus-auto.jpg"
+        },
+        {
+            name: "Clementoni 17687 Baby Logik Spiel",
+            preis: 12.99,
+            bild: "https://darcom24.de/wp-content/uploads/2024/03/clementoni-17687-baby-logik-spiel.jpg"
+        }
+    ];
+
+    const container = document.getElementById("artikelButtons");
+    artikel.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "artikel-card";
+        card.innerHTML = `
+            <img src="${item.bild}" alt="${item.name}">
+            <strong>${item.name}</strong><br>${item.preis.toFixed(2)} €
+        `;
+        card.addEventListener("click", () => addRow(item.name, 1, item.preis));
+        container.appendChild(card);
+    });
+
+    function addRow(name = '', menge = 1, preis = 0) {
+        const table = document.querySelector('#artikelTabelle tbody');
+        let existingRow = null;
+
+        table.querySelectorAll('tr').forEach(row => {
+            const artikelName = row.cells[1].querySelector('input').value;
+            if (artikelName === name) {
+                existingRow = row;
             }
-        ];
-
-        const container = document.getElementById("artikelButtons");
-        artikel.forEach(item => {
-            const card = document.createElement("div");
-            card.className = "artikel-card";
-            card.innerHTML = `
-                <img src="${item.bild}" alt="${item.name}">
-                <strong>${item.name}</strong><br>${item.preis.toFixed(2)} €
-            `;
-            card.addEventListener("click", () => addRow(item.name, 1, item.preis));
-            container.appendChild(card);
         });
 
-        function addRow(name = '', menge = 1, preis = 0) {
-            const table = document.querySelector('#artikelTabelle tbody');
-            let existingRow = null;
-
-            table.querySelectorAll('tr').forEach(row => {
-                const artikelName = row.cells[1].querySelector('input').value;
-                if (artikelName === name) {
-                    existingRow = row;
-                }
-            });
-
-            if (existingRow) {
-                const mengeInput = existingRow.cells[2].querySelector('input');
-                const gesamtpreisCell = existingRow.cells[4];
-                let aktuelleMenge = parseInt(mengeInput.value);
-                mengeInput.value = aktuelleMenge + menge;
-                gesamtpreisCell.textContent = ((aktuelleMenge + menge) * preis).toFixed(2) + ' €';
-            } else {
-                const row = document.createElement('tr');
-                const pos = table.rows.length + 1;
-                row.innerHTML = `
-                    <td>${pos}</td>
-                    <td><input type="text" value="${name}" placeholder="Artikel"></td>
-                    <td><input type="number" value="${menge}" min="1" onchange="updateGesamtpreis(this)"></td>
-                    <td><input type="number" value="${preis}" min="0" step="0.01" onchange="updateGesamtpreis(this)"></td>
-                    <td>${(menge * preis).toFixed(2)} €</td>
-                    <td><button onclick="removeRow(this)">✕</button></td>
-                `;
-                table.appendChild(row);
-            }
-            updatePositions();
-            updateTotalSum();
-        }
-
-        function removeRow(btn) {
-            btn.closest('tr').remove();
-            updatePositions();
-            updateTotalSum();
-        }
-
-        function updatePositions() {
-            const rows = document.querySelectorAll('#artikelTabelle tbody tr');
-            rows.forEach((row, index) => {
-                row.cells[0].textContent = index + 1;
-            });
-        }
-
-        function updateGesamtpreis(input) {
-            const row = input.closest('tr');
-            const menge = parseInt(row.cells[2].querySelector('input').value) || 0;
-            const preis = parseFloat(row.cells[3].querySelector('input').value) || 0;
-            row.cells[4].textContent = (menge * preis).toFixed(2) + ' €';
-            updateTotalSum();
-        }
-
-        function updateTotalSum() {
-            let total = 0;
-            const rows = document.querySelectorAll('#artikelTabelle tbody tr');
-            rows.forEach(row => {
-                const preis = parseFloat(row.cells[4].textContent.replace(' €', '')) || 0;
-                total += preis;
-            });
-
-            const netto = (total / 1.19).toFixed(2);
-            const mwst = (total - netto).toFixed(2);
-
-            let summeBox = document.getElementById('gesamtSumme');
-            if (!summeBox) {
-                summeBox = document.createElement('div');
-                summeBox.id = 'gesamtSumme';
-                document.querySelector('table').after(summeBox);
-            }
-
-            summeBox.innerHTML = `
-                <strong>Nettobetrag:
-                </strong> ${netto} €<br>
-                <strong>19 % MwSt:</strong> ${mwst} €<br>
-                <strong>Gesamtsumme:</strong> ${total.toFixed(2)} €
+        if (existingRow) {
+            const mengeInput = existingRow.cells[2].querySelector('input');
+            const gesamtpreisCell = existingRow.cells[4];
+            let aktuelleMenge = parseInt(mengeInput.value);
+            mengeInput.value = aktuelleMenge + menge;
+            gesamtpreisCell.textContent = ((aktuelleMenge + menge) * preis).toFixed(2) + ' €';
+        } else {
+            const row = document.createElement('tr');
+            const pos = table.rows.length + 1;
+            row.innerHTML = `
+                <td>${pos}</td>
+                <td><input type="text" value="${name}" placeholder="Artikel"></td>
+                <td><input type="number" value="${menge}" min="1" onchange="updateGesamtpreis(this)"></td>
+                <td><input type="number" value="${preis}" min="0" step="0.01" onchange="updateGesamtpreis(this)"></td>
+                <td>${(menge * preis).toFixed(2)} €</td>
+                <td><button onclick="removeRow(this)">✕</button></td>
             `;
+            table.appendChild(row);
+        }
+        updatePositions();
+        updateTotalSum();
+    }
+
+    function removeRow(btn) {
+        btn.closest('tr').remove();
+        updatePositions();
+        updateTotalSum();
+    }
+
+    function updatePositions() {
+        const rows = document.querySelectorAll('#artikelTabelle tbody tr');
+        rows.forEach((row, index) => {
+            row.cells[0].textContent = index + 1;
+        });
+    }
+
+    function updateGesamtpreis(input) {
+        const row = input.closest('tr');
+        const menge = parseInt(row.cells[2].querySelector('input').value) || 0;
+        const preis = parseFloat(row.cells[3].querySelector('input').value) || 0;
+        row.cells[4].textContent = (menge * preis).toFixed(2) + ' €';
+        updateTotalSum();
+    }
+
+    function updateTotalSum() {
+        let total = 0;
+        const rows = document.querySelectorAll('#artikelTabelle tbody tr');
+        rows.forEach(row => {
+            const preis = parseFloat(row.cells[4].textContent.replace(' €', '')) || 0;
+            total += preis;
+        });
+
+        const netto = (total / 1.19).toFixed(2);
+        const mwst = (total - netto).toFixed(2);
+
+        let summeBox = document.getElementById('gesamtSumme');
+        if (!summeBox) {
+            summeBox = document.createElement('div');
+            summeBox.id = 'gesamtSumme';
+            document.querySelector('table').after(summeBox);
         }
 
-        async function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
+        summeBox.innerHTML = `
+            <strong>Nettobetrag:</strong> ${netto} €<br>
+            <strong>19 % MwSt:</strong> ${mwst} €<br>
+            <strong>Gesamtsumme:</strong> ${total.toFixed(2)} €
+        `;
+    }
 
-            // Logo laden (lokal eingebettet)
-            const logoData = await fetch("logo-darcom.png").then(r => r.blob()).then(blob => {
-                return new Promise(resolve => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(blob);
-                });
+    async function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+
+        const logoData = await fetch("logo-darcom.png").then(r => r.blob()).then(blob => {
+            return new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
             });
+        });
 
-            pdf.addImage(logoData, 'PNG', 150, 10, 40, 20);
-            pdf.setFontSize(16);
-            pdf.text("Rechnung", 10, 20);
+        pdf.addImage(logoData, 'PNG', 150, 10, 40, 20);
+        pdf.setFontSize(16);
+        pdf.text("Rechnung", 10, 20);
 
-            const kunde = document.getElementById('kunde').value;
-            const adresse = document.getElementById('adresse').value;
+        const kunde = document.getElementById('kunde').value;
+        const adresse = document.getElementById('adresse').value;
 
-            pdf.setFontSize(12);
-            pdf.text(`Kunde: ${kunde}`, 10, 35);
-            pdf.text(`Adresse: ${adresse}`, 10, 42);
+        pdf.setFontSize(12);
+        pdf.text(`Kunde: ${kunde}`, 10, 35);
+        pdf.text(`Adresse: ${adresse}`, 10, 42);
 
-            const table = document.querySelector('#artikelTabelle tbody');
-            const rows = Array.from(table.rows).map(row => {
-                const pos = row.cells[0].textContent;
-                const name = row.cells[1].querySelector('input').value;
-                const menge = row.cells[2].querySelector('input').value;
-                const einzel = row.cells[3].querySelector('input').value;
-                const gesamt = row.cells[4].textContent.replace(' €', '');
-                return [pos, name, menge, einzel, gesamt];
+        const table = document.querySelector('#artikelTabelle tbody');
+        const rows = Array.from(table.rows).map(row => {
+            const pos = row.cells[0].textContent;
+            const name = row.cells[1].querySelector('input').value;
+            const menge = row.cells[2].querySelector('input').value;
+            const einzel = row.cells[3].querySelector('input').value;
+            const gesamt = row.cells[4].textContent.replace(' €', '');
+            return [pos, name, menge, einzel, gesamt];
+        });
+
+        pdf.autoTable({
+            head: [["Pos", "Artikel", "Menge", "Einzelpreis (€)", "Gesamt (€)"]],
+            body: rows,
+            startY: 50
+        });
+
+        const total = rows.reduce((sum, r) => sum + parseFloat(r[4]), 0);
+        const netto = (total / 1.19).toFixed(2);
+        const mwst = (total - netto).toFixed(2);
+
+        const finalY = pdf.lastAutoTable.finalY + 10;
+        pdf.text(`Nettobetrag: ${netto} €`, 10, finalY);
+        pdf.text(`19 % MwSt: ${mwst} €`, 10, finalY + 7);
+        pdf.text(`Gesamtsumme: ${total.toFixed(2)} €`, 10, finalY + 14);
+
+        pdf.save(`rechnung_${kunde.replace(/\s+/g, '_') || 'unbenannt'}.pdf`);
+    }
+
+    // --- CSV Export Funktion ---
+    document.getElementById("exportCSV").addEventListener("click", function () {
+        const rows = document.querySelectorAll("#artikelTabelle tr");
+        let csv = [];
+
+        rows.forEach(row => {
+            let cols = Array.from(row.querySelectorAll("th, td")).map(cell => {
+                const input = cell.querySelector("input");
+                const text = input ? input.value : cell.textContent;
+                return `"${text.trim().replace(/"/g, '""')}"`;
             });
+            csv.push(cols.join(","));
+        });
 
-            pdf.autoTable({
-                head: [["Pos", "Artikel", "Menge", "Einzelpreis (€)", "Gesamt (€)"]],
-                body: rows,
-                startY: 50
-            });
+        const blob = new Blob([csv.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", "rechnung.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+</script>
 
-            const total = rows.reduce((sum, r) => sum + parseFloat(r[4]), 0);
-            const netto = (total / 1.19).toFixed(2);
-            const mwst = (total - netto).toFixed(2);
-
-            const finalY = pdf.lastAutoTable.finalY + 10;
-            pdf.text(`Nettobetrag: ${netto} €`, 10, finalY);
-            pdf.text(`19 % MwSt: ${mwst} €`, 10, finalY + 7);
-            pdf.text(`Gesamtsumme: ${total.toFixed(2)} €`, 10, finalY + 14);
-
-            pdf.save(`rechnung_${kunde.replace(/\s+/g, '_') || 'unbenannt'}.pdf`);
-        }
-    </script>
 </body>
 </html>
