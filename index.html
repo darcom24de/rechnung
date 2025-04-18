@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+   <script>
+  const username = "deinBenutzername";
+  const password = "deinPasswort";
+
+  const enteredUsername = prompt("Benutzername:");
+  const enteredPassword = prompt("Passwort:");
+
+  if (enteredUsername !== username || enteredPassword !== password) {
+    document.body.innerHTML = "<h1>Zugriff verweigert</h1>";
+  }
+</script> 
     <meta charset="UTF-8">
     <title>Rechnung – darcom24</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
