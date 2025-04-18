@@ -5,37 +5,7 @@
     <title>Rechnung – darcom24</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-      <script>
-document.getElementById('exportCSV').addEventListener('click', function () {
-    const table = document.getElementById('rechnungstabelle');
-    let csvContent = "";
-
-    // Tabellenzeilen durchgehen
-    for (let row of table.rows) {
-        let rowData = [];
-        for (let cell of row.cells) {
-            // Zelleninhalt in Anführungszeichen, falls Kommas enthalten sind
-            rowData.push('"' + cell.innerText.replace(/"/g, '""') + '"');
-        }
-        csvContent += rowData.join(",") + "\r\n";
-    }
-
-    // CSV-Datei als Blob erzeugen
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-
-    // Link zum Herunterladen erzeugen und automatisch klicken
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "rechnung.csv");
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-});
-</script>
-
-    <style>
+      <style>
         body {
             font-family: sans-serif;
             padding: 2rem;
