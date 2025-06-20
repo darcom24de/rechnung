@@ -1,196 +1,201 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Rechnung – darcom24</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-
-    .no-print {
-      margin-bottom: 20px;
-    }
-
-    @media print {
-      .no-print {
-        display: none !important;
-      }
-
-      table {
-        page-break-inside: avoid;
-      }
-    }
-
-    .adresse {
-      margin-bottom: 20px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    table, th, td {
-      border: 1px solid black;
-    }
-
-    th, td {
-      padding: 8px;
-      text-align: left;
-    }
-
-    .summary {
-      margin-top: 20px;
-      text-align: right;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Rechnung – darcom24</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2rem;
+            max-width: 800px;
+            margin: auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .header img {
+            max-width: 150px;
+        }
+        input, select {
+            display: block;
+            margin-bottom: 1rem;
+            width: 100%;
+            padding: 0.5rem;
+        }
+        button {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            margin-right: 0.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .artikel-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .artikel-card {
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            width: 150px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .artikel-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .summe-box {
+            text-align: right;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        .no-print {
+            display: block;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            a[href^="http"] {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 <body>
-
-  <!-- Adresse oben sichtbar beim Drucken -->
-  <div class="adresse">
+<div class="no-print" style="text-align: left; margin-bottom: 10px;">
     <strong>HC-Shop</strong><br>
     Pankstraße 46<br>
     13357 Berlin<br>
     USt-ID-Nr.: DE353633206
-  </div>
 
-  <!-- Buttons (nicht druckbar) -->
-  <div class="no-print">
-    <button onclick="window.print()">🖨️ Drucken</button>
-    <button onclick="exportCSV()">📄 CSV Export</button>
-    <button onclick="downloadPDF()">📥 PDF herunterladen</button>
-    <button onclick="addArticle()">➕ Artikel hinzufügen</button>
-  </div>
 
-  <h1>RECHNUNG</h1>
+</div>
+<div class="header">
+    <h1>Rechnung</h1>
+    <img src="logo-darcom.png" alt="darcom24 Logo">
+</div>
 
-  <!-- Artikel-Tabelle -->
-  <table id="artikelTabelle">
+<label for="kunde">Kunde:</label>
+<input type="text" id="kunde" placeholder="Kundenname">
+
+<label for="adresse">Adresse:</label>
+<input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
+
+<label>Artikel (Pos, Name, Menge, Einzelpreis inkl. MwSt):</label>
+<table id="artikelTabelle">
     <thead>
-      <tr>
+    <tr>
         <th>Pos</th>
         <th>Artikel</th>
         <th>Menge</th>
-        <th>Einzelpreis</th>
-        <th>Gesamtpreis</th>
-      </tr>
+        <th>Einzelpreis (€)</th>
+        <th>Gesamtpreis (€)</th>
+        <th></th>
+    </tr>
     </thead>
-    <tbody>
-      <!-- Dynamisch erzeugte Zeilen kommen hier -->
-    </tbody>
-  </table>
+    <tbody></tbody>
+</table>
 
-  <!-- Summen -->
-  <div class="summary">
-    <p>Nettobetrag: <span id="netto">0,00 €</span></p>
-    <p>19% MwSt: <span id="mwst">0,00 €</span></p>
-    <p><strong>Gesamtsumme: <span id="gesamt">0,00 €</span></strong></p>
-  </div>
+<div class="artikel-buttons no-print" id="artikelButtons"></div>
 
-  <!-- Script -->
-  <script>
-    let position = 1;
-    const tabelle = document.querySelector('#artikelTabelle tbody');
-    const nettoSpan = document.getElementById('netto');
-    const mwstSpan = document.getElementById('mwst');
-    const gesamtSpan = document.getElementById('gesamt');
+<div class="no-print">
+    <button onclick="window.print()">Drucken</button>
+    <button id="exportCSV">CSV Export</button>
+    <button onclick="downloadPDF()">PDF herunterladen</button>
+    <button onclick="addRow()">+ Artikel hinzufügen</button>
+</div>
 
-    function addArticle() {
-      const artikel = prompt('Artikelname:');
-      const menge = parseInt(prompt('Menge:'), 10);
-      const preis = parseFloat(prompt('Einzelpreis (€):').replace(',', '.'));
+<script>
+function addRow(name = '', menge = 1, preis = 0) {
+    const table = document.querySelector('#artikelTabelle tbody');
+    const row = document.createElement('tr');
+    const pos = table.rows.length + 1;
+    row.innerHTML = `
+        <td>${pos}</td>
+        <td><input type="text" value="${name}" placeholder="Artikel"></td>
+        <td><input type="number" value="${menge}" min="1" onchange="updateGesamtpreis(this)"></td>
+        <td><input type="number" value="${preis}" min="0" step="0.01" onchange="updateGesamtpreis(this)"></td>
+        <td>${(menge * preis).toFixed(2)} €</td>
+        <td><button onclick="removeRow(this)">✕</button></td>
+    `;
+    table.appendChild(row);
+    updatePositions();
+    updateTotalSum();
+}
 
-      if (!artikel || isNaN(menge) || isNaN(preis)) {
-        alert('Ungültige Eingabe.');
-        return;
-      }
+function removeRow(btn) {
+    btn.closest('tr').remove();
+    updatePositions();
+    updateTotalSum();
+}
 
-      const gesamt = (menge * preis).toFixed(2).replace('.', ',') + ' €';
+function updatePositions() {
+    const rows = document.querySelectorAll('#artikelTabelle tbody tr');
+    rows.forEach((row, index) => {
+        row.cells[0].textContent = index + 1;
+    });
+}
 
-      const zeile = document.createElement('tr');
-      zeile.innerHTML = `
-        <td>${position++}</td>
-        <td>${artikel}</td>
-        <td>${menge}</td>
-        <td>${preis.toFixed(2).replace('.', ',')} €</td>
-        <td>${gesamt}</td>
-      `;
-      tabelle.appendChild(zeile);
+function updateGesamtpreis(input) {
+    const row = input.closest('tr');
+    const menge = parseInt(row.cells[2].querySelector('input').value) || 0;
+    const preis = parseFloat(row.cells[3].querySelector('input').value) || 0;
+    row.cells[4].textContent = (menge * preis).toFixed(2) + ' €';
+    updateTotalSum();
+}
 
-      updateSummary();
+function updateTotalSum() {
+    let total = 0;
+    const rows = document.querySelectorAll('#artikelTabelle tbody tr');
+    rows.forEach(row => {
+        const preis = parseFloat(row.cells[4].textContent.replace(' €', '')) || 0;
+        total += preis;
+    });
+
+    const netto = (total / 1.19).toFixed(2);
+    const mwst = (total - netto).toFixed(2);
+
+    let summeBox = document.getElementById('gesamtSumme');
+    if (!summeBox) {
+        summeBox = document.createElement('div');
+        summeBox.id = 'gesamtSumme';
+        document.querySelector('table').after(summeBox);
     }
 
-    function updateSummary() {
-      let netto = 0;
-      tabelle.querySelectorAll('tr').forEach(row => {
-        const gesamtCell = row.children[4];
-        if (gesamtCell) {
-          const betrag = parseFloat(gesamtCell.textContent.replace('€', '').replace(',', '.'));
-          if (!isNaN(betrag)) netto += betrag;
-        }
-      });
-      const mwst = netto * 0.19;
-      const gesamt = netto + mwst;
+    summeBox.innerHTML = `
+        <strong>Nettobetrag:</strong> ${netto} €<br>
+        <strong>19 % MwSt:</strong> ${mwst} €<br>
+        <strong>Gesamtsumme:</strong> ${total.toFixed(2)} €
+    `;
+}
+</script>
 
-      nettoSpan.textContent = netto.toFixed(2).replace('.', ',') + ' €';
-      mwstSpan.textContent = mwst.toFixed(2).replace('.', ',') + ' €';
-      gesamtSpan.textContent = gesamt.toFixed(2).replace('.', ',') + ' €';
-    }
-
-    function exportCSV() {
-      let csv = "Pos,Artikel,Menge,Einzelpreis,Gesamtpreis\n";
-      document.querySelectorAll("#artikelTabelle tbody tr").forEach(row => {
-        const cols = Array.from(row.children).map(td => td.textContent.replace(' €', '').replace(',', '.'));
-        csv += cols.join(",") + "\n";
-      });
-
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "rechnung.csv";
-      link.click();
-    }
-
-    function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      doc.setFontSize(12);
-      doc.text("HC-Shop\nPankstraße 46\n13357 Berlin\nUSt-ID-Nr.: DE353633206", 14, 15);
-      doc.setFontSize(16);
-      doc.text("RECHNUNG", 105, 30, null, null, "center");
-
-      const rows = [];
-      document.querySelectorAll("#artikelTabelle tbody tr").forEach(row => {
-        const data = Array.from(row.children).map(td => td.textContent);
-        rows.push(data);
-      });
-
-      doc.autoTable({
-        head: [['Pos', 'Artikel', 'Menge', 'Einzelpreis', 'Gesamtpreis']],
-        body: rows,
-        startY: 40
-      });
-
-      let netto = nettoSpan.textContent;
-      let mwst = mwstSpan.textContent;
-      let gesamt = gesamtSpan.textContent;
-
-      doc.setFontSize(12);
-      doc.text(`Nettobetrag: ${netto}`, 140, doc.lastAutoTable.finalY + 10, { align: 'right' });
-      doc.text(`19% MwSt: ${mwst}`, 140, doc.lastAutoTable.finalY + 20, { align: 'right' });
-      doc.text(`Gesamtsumme: ${gesamt}`, 140, doc.lastAutoTable.finalY + 30, { align: 'right' });
-
-      const kundenname = prompt("Kundenname für Dateiname:");
-      const filename = kundenname ? `Rechnung_${kundenname}.pdf` : 'Rechnung.pdf';
-      doc.save(filename);
-    }
-  </script>
 </body>
 </html>
