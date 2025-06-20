@@ -130,7 +130,68 @@
 </div>
 
 <script>
-// Der JavaScript-Code bleibt unverändert
+function addRow(name = '', menge = 1, preis = 0) {
+    const table = document.querySelector('#artikelTabelle tbody');
+    const row = document.createElement('tr');
+    const pos = table.rows.length + 1;
+    row.innerHTML = `
+        <td>${pos}</td>
+        <td><input type="text" value="${name}" placeholder="Artikel"></td>
+        <td><input type="number" value="${menge}" min="1" onchange="updateGesamtpreis(this)"></td>
+        <td><input type="number" value="${preis}" min="0" step="0.01" onchange="updateGesamtpreis(this)"></td>
+        <td>${(menge * preis).toFixed(2)} €</td>
+        <td><button onclick="removeRow(this)">✕</button></td>
+    `;
+    table.appendChild(row);
+    updatePositions();
+    updateTotalSum();
+}
+
+function removeRow(btn) {
+    btn.closest('tr').remove();
+    updatePositions();
+    updateTotalSum();
+}
+
+function updatePositions() {
+    const rows = document.querySelectorAll('#artikelTabelle tbody tr');
+    rows.forEach((row, index) => {
+        row.cells[0].textContent = index + 1;
+    });
+}
+
+function updateGesamtpreis(input) {
+    const row = input.closest('tr');
+    const menge = parseInt(row.cells[2].querySelector('input').value) || 0;
+    const preis = parseFloat(row.cells[3].querySelector('input').value) || 0;
+    row.cells[4].textContent = (menge * preis).toFixed(2) + ' €';
+    updateTotalSum();
+}
+
+function updateTotalSum() {
+    let total = 0;
+    const rows = document.querySelectorAll('#artikelTabelle tbody tr');
+    rows.forEach(row => {
+        const preis = parseFloat(row.cells[4].textContent.replace(' €', '')) || 0;
+        total += preis;
+    });
+
+    const netto = (total / 1.19).toFixed(2);
+    const mwst = (total - netto).toFixed(2);
+
+    let summeBox = document.getElementById('gesamtSumme');
+    if (!summeBox) {
+        summeBox = document.createElement('div');
+        summeBox.id = 'gesamtSumme';
+        document.querySelector('table').after(summeBox);
+    }
+
+    summeBox.innerHTML = `
+        <strong>Nettobetrag:</strong> ${netto} €<br>
+        <strong>19 % MwSt:</strong> ${mwst} €<br>
+        <strong>Gesamtsumme:</strong> ${total.toFixed(2)} €
+    `;
+}
 </script>
 
 </body>
