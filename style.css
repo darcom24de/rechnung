@@ -71,3 +71,15 @@ input, select {
 .dropdown:hover .dropdown-content {
     display: block; /* Dropdown anzeigen */
 }
+<style>
+  #briefkopf {
+    display: none;
+    margin-bottom: 20px;
+  }
+
+  @media print {
+    #briefkopf {
+      display: block;
+    }
+  }
+</style>
