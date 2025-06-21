@@ -120,3 +120,11 @@ function sanitizeFilename(name) {
 function resetInvoiceNumber() {
   localStorage.removeItem('invoiceNumber');
 }
+<script>
+  // ... deine Funktionen
+
+  // Am Ende:
+  window.onload = function () {
+    addArticle();
+  };
+</script>
