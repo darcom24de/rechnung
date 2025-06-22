@@ -124,4 +124,22 @@ function resetInvoiceNumber() {
 
 window.onload = function () {
   addArticle();
+  function getNextInvoiceNumber() {
+  let lastNumber = localStorage.getItem('rechnungsnummer');
+  let nextNumber = lastNumber ? parseInt(lastNumber) + 1 : 1;
+  localStorage.setItem('rechnungsnummer', nextNumber);
+  return nextNumber;
+}
+
+function updateInvoiceNumberDisplay() {
+  const number = getNextInvoiceNumber();
+  document.getElementById('rechnungsnummer').textContent = 'Nr. ' + number.toString().padStart(4, '0');
+}
+
+// Aufrufen beim Laden der Seite
+window.onload = function () {
+  updateInvoiceNumberDisplay();
+  // falls du noch mehr beim Laden machst:
+  // z. B. buttons vorbereiten etc.
 };
+
