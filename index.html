@@ -255,7 +255,7 @@ function downloadPDF() {
     doc.setFontSize(12);
     doc.text(`Nettobetrag: ${nettoSumme.toFixed(2)} €`, width - 60, finalY + 10, { align: 'right' });
     doc.text(`MwSt 19%: ${mwstBetrag.toFixed(2)} €`, width - 60, finalY + 20, { align: 'right' });
-    doc.text(`Gesamtpreis (brutto): ${bruttoSumme.toFixed(2)} €`, width - 60, finalY + 30, { align: 'right' });
+    doc.text(`Gesamtpreis: ${bruttoSumme.toFixed(2)} €`, width - 60, finalY + 30, { align: 'right' });
 
     doc.save(`${kunde || 'Rechnung'}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
 }
