@@ -1,3 +1,18 @@
+let aktuelleRechnungsnummer = 1;
+
+function getNextInvoiceNumber() {
+  let lastNumber = localStorage.getItem('rechnungsnummer');
+  let nextNumber = lastNumber ? parseInt(lastNumber) + 1 : 1;
+  localStorage.setItem('rechnungsnummer', nextNumber);
+  aktuelleRechnungsnummer = nextNumber;
+  return nextNumber;
+}
+
+function updateInvoiceNumberDisplay() {
+  const number = getNextInvoiceNumber();
+  const formatted = 'Nr. ' + number.toString().padStart(4, '0');
+  document.getElementById('rechnungsnummer').textContent = formatted;
+}
 function generateInvoice() {
   const artikelName = document.getElementById('artikelName').value;
   const einzelpreis = parseFloat(document.getElementById('einzelpreis').value);
