@@ -26,6 +26,7 @@
             margin-bottom: 1rem;
             width: 100%;
             padding: 0.5rem;
+            box-sizing: border-box;
         }
         button {
             padding: 0.75rem 1rem;
@@ -50,31 +51,6 @@
         th {
             background-color: #f2f2f2;
         }
-        .artikel-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-        .artikel-card {
-            border: 1px solid #ccc;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            width: 150px;
-            text-align: center;
-            cursor: pointer;
-        }
-        .artikel-card img {
-            width: 100%;
-            height: auto;
-            border-radius: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        .summe-box {
-            text-align: right;
-            font-size: 1rem;
-            margin-top: 1rem;
-        }
         .no-print {
             display: block;
         }
@@ -96,9 +72,9 @@
     USt-ID-Nr.: DE353633206
 </div>
 <div class="header">
-    <h2 style="display: flex; justify-content: space-between; align-items: center;">
-        RECHNUNG 
-        <span id="rechnungsnummer" style="font-size: 1em; font-weight: normal;"></span>
+    <h2 style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        RECHNUNG
+        <span id="rechnungsnummer" style="font-size: 1em; font-weight: normal; margin-left: 1rem;"></span>
     </h2>
     <img src="logo-darcom.png" alt="darcom24 Logo">
 </div>
@@ -121,19 +97,17 @@
     <tbody></tbody>
 </table>
 
-<div class="artikel-buttons no-print" id="artikelButtons"></div>
-
 <div class="no-print">
     <button onclick="window.print()">Drucken</button>
-    <button id="exportCSV">CSV Export</button>
+    <button onclick="exportCSV()">CSV Export</button>
     <button onclick="downloadPDF()">PDF herunterladen</button>
     <button onclick="addRow()">+ Artikel hinzufügen</button>
 </div>
 
 <script>
-let artikelListe = [];
 let aktuelleRechnungsnummer = 1;
 
+// Lädt und erhöht die Rechnungsnummer aus localStorage
 function getNextInvoiceNumber() {
     let lastNumber = localStorage.getItem('rechnungsnummer');
     let nextNumber = lastNumber ? parseInt(lastNumber) + 1 : 1;
@@ -142,77 +116,119 @@ function getNextInvoiceNumber() {
     return nextNumber;
 }
 
+// Zeigt die Rechnungsnummer im HTML an
 function updateInvoiceNumberDisplay() {
     const number = getNextInvoiceNumber();
     const formatted = 'Nr. ' + number.toString().padStart(4, '0');
     document.getElementById('rechnungsnummer').textContent = formatted;
 }
 
-function addArtikel() {
-    const artikelName = document.getElementById('artikelName').value;
-    const einzelpreis = parseFloat(document.getElementById('einzelpreis').value);
-    const menge = parseInt(document.getElementById('menge').value) || 1;
-    const mwst = parseFloat(document.getElementById('mwst').value) || 0;
-
-    if (!artikelName || isNaN(einzelpreis)) return;
-
-    const gesamt = (einzelpreis * menge).toFixed(2);
-    artikelListe.push({ artikelName, menge, einzelpreis, gesamt });
-
-    renderTabelle();
-}
-
-function renderTabelle() {
+// Fügt eine neue Artikelzeile mit Eingabefeldern hinzu
+function addRow(name = '', menge = 1, preis = 0) {
     const tbody = document.querySelector("#artikelTabelle tbody");
-    tbody.innerHTML = "";
-
-    artikelListe.forEach((artikel, index) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${artikel.artikelName}</td>
-            <td>${artikel.menge}</td>
-            <td>${artikel.einzelpreis.toFixed(2)} €</td>
-            <td>${artikel.gesamt} €</td>
-        `;
-        tbody.appendChild(tr);
-    });
+    const row = document.createElement('tr');
+    const pos = tbody.rows.length + 1;
+    row.innerHTML = `
+        <td>${pos}</td>
+        <td><input type="text" placeholder="Artikelname" value="${name}"></td>
+        <td><input type="number" min="1" value="${menge}" onchange="updateGesamtpreis(this)"></td>
+        <td><input type="number" min="0" step="0.01" value="${preis}" onchange="updateGesamtpreis(this)"></td>
+        <td>0.00 €</td>
+        <td><button onclick="removeRow(this)">✕</button></td>
+    `;
+    tbody.appendChild(row);
+    updateGesamtpreis(row.cells[3].querySelector('input'));
 }
 
-async function generatePDF() {
+// Entfernt eine Artikelzeile
+function removeRow(btn) {
+    btn.closest('tr').remove();
+    updatePositions();
+    updateTotalSum();
+}
+
+// Aktualisiert die Positionsnummern nach Entfernen einer Zeile
+function updatePositions() {
+    const rows = document.querySelectorAll('#artikelTabelle tbody tr');
+    rows.forEach((row, i) => row.cells[0].textContent = i + 1);
+}
+
+// Berechnet und aktualisiert den Gesamtpreis einer Zeile
+function updateGesamtpreis(input) {
+    const row = input.closest('tr');
+    const menge = parseInt(row.cells[2].querySelector('input').value) || 0;
+    const preis = parseFloat(row.cells[3].querySelector('input').value) || 0;
+    row.cells[4].textContent = (menge * preis).toFixed(2) + ' €';
+    updateTotalSum();
+}
+
+// Berechnet und zeigt die Gesamtsumme (optional)
+function updateTotalSum() {
+    let total = 0;
+    document.querySelectorAll('#artikelTabelle tbody tr').forEach(row => {
+        const preis = parseFloat(row.cells[4].textContent.replace(' €', '')) || 0;
+        total += preis;
+    });
+    // Hier kannst du Summe ausgeben, z.B.:
+    // console.log('Gesamt:', total.toFixed(2) + ' €');
+}
+
+// Exportiert die Artikelliste als CSV-Datei
+function exportCSV() {
+    let csv = 'Pos,Artikel,Menge,Einzelpreis,Gesamtpreis\n';
+    document.querySelectorAll('#artikelTabelle tbody tr').forEach(row => {
+        const cols = Array.from(row.cells).slice(0, 5);
+        const values = cols.map(td => td.textContent.replace(' €', '').trim());
+        csv += values.join(',') + '\n';
+    });
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'rechnung.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// Erzeugt die PDF mit jsPDF und autotable
+function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
     doc.setFontSize(18);
     doc.text("RECHNUNG", 14, 20);
 
-    const seitenbreite = doc.internal.pageSize.getWidth();
+    const width = doc.internal.pageSize.getWidth();
     const rechnungsnummerText = 'Nr. ' + aktuelleRechnungsnummer.toString().padStart(4, '0');
     doc.setFontSize(12);
-    doc.text(rechnungsnummerText, seitenbreite - 40, 20);
+    doc.text(rechnungsnummerText, width - 40, 20);
 
-    const kunde = document.getElementById("kunde").value;
+    const kunde = document.getElementById("adresse").value;
     doc.text("Kunde: " + kunde, 14, 30);
 
-    const tableData = artikelListe.map((artikel, index) => ([
-        (index + 1).toString(),
-        artikel.artikelName,
-        artikel.menge.toString(),
-        artikel.einzelpreis.toFixed(2) + " €",
-        artikel.gesamt + " €"
-    ]));
+    // Tabelle vorbereiten
+    const data = [];
+    document.querySelectorAll('#artikelTabelle tbody tr').forEach((row, i) => {
+        const artikel = row.cells[1].querySelector('input').value || '';
+        const menge = row.cells[2].querySelector('input').value || '';
+        const preis = row.cells[3].querySelector('input').value || '';
+        const gesamt = row.cells[4].textContent || '';
+        data.push([ (i+1).toString(), artikel, menge, preis + ' €', gesamt ]);
+    });
 
     doc.autoTable({
         head: [["Pos", "Artikel", "Menge", "Einzelpreis", "Gesamt"]],
-        body: tableData,
+        body: data,
         startY: 40
     });
 
-    doc.save(`${kunde || "Rechnung"}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
+    doc.save(`${kunde || 'Rechnung'}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
 }
 
+// Initialisierung beim Laden der Seite
 window.onload = function () {
     updateInvoiceNumberDisplay();
+    if(document.querySelector("#artikelTabelle tbody tr").length === 0) addRow();
 };
 </script>
 
