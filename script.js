@@ -103,7 +103,14 @@ function downloadPDF() {
   const pdf = new jsPDF();
 
   // Füge hier den Inhalt für deine PDF hinzu
-  pdf.text("Rechnung", 10, 10); // Text an der Position (10, 10)
+  doc.setFontSize(18);
+doc.text("RECHNUNG", 14, 20);
+
+// Rechnungsnummer rechts daneben
+const rechnungsnummerText = 'Nr. ' + aktuelleRechnungsnummer.toString().padStart(4, '0');
+const seitenbreite = doc.internal.pageSize.getWidth();
+doc.setFontSize(12);
+doc.text(rechnungsnummerText, seitenbreite - 40, 20); // Abstand ggf. anpassen
 
   // Speichere die PDF und starte den Download
   pdf.save("rechnung.pdf");
