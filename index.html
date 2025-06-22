@@ -178,7 +178,6 @@ function updateTotalSum() {
 
     document.querySelectorAll('#artikelTabelle tbody tr').forEach(row => {
         const preisText = row.cells[4].textContent || '';
-        // Falls Komma als Dezimaltrennzeichen, ersetzen wir durch Punkt
         const preis = parseFloat(preisText.replace(' €', '').replace(',', '.')) || 0;
         bruttoSumme += preis;
     });
@@ -265,7 +264,7 @@ window.onload = function () {
     updateInvoiceNumberDisplay();
     if(document.querySelector("#artikelTabelle tbody tr").length === 0) {
         addRow();
-        updateTotalSum();
+        setTimeout(() => updateTotalSum(), 10);
     }
 };
 </script>
