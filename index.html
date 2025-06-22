@@ -203,7 +203,10 @@
 
     async function downloadPDF() {
       const { jsPDF } = window.jspdf;
+      window.jspdf.autoTable = window.jspdfAutoTable.default;
       const doc = new jsPDF();
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.umd.min.js"></script>
+
 
       doc.setFontSize(12);
       doc.text("HC-Shop", 14, 20);
