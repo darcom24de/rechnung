@@ -1,90 +1,201 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Rechnung – darcom24</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    input, select, button {
-      margin: 5px;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 10px;
-    }
-    table, th, td {
-      border: 1px solid black;
-    }
-    th, td {
-      padding: 6px;
-      text-align: left;
-    }
-    #buttons {
-      margin-top: 15px;
-    }
-    @media print {
-      #buttons, #footer-link {
-        display: none;
-      }
-    }
-    #logo {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 120px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Rechnung – darcom24</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2rem;
+            max-width: 800px;
+            margin: auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .header img {
+            max-width: 150px;
+        }
+        input, select {
+            display: block;
+            margin-bottom: 1rem;
+            width: 100%;
+            padding: 0.5rem;
+        }
+        button {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            margin-right: 0.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .artikel-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .artikel-card {
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            width: 150px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .artikel-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .summe-box {
+            text-align: right;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        .no-print {
+            display: block;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            a[href^="http"] {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 <body>
+<div class="print" style="text-align: left; margin-bottom: 10px;">
+    <strong>HC-Shop</strong><br>
+    Pankstraße 46<br>
+    13357 Berlin<br>
+    USt-ID-Nr.: DE353633206
 
-  <img src="logo.png" id="logo" alt="Logo">
 
-  <h2>RECHNUNG</h2>
+</div>
+<div class="header">
+    <h1>Rechnung</h1>
+    <img src="logo-darcom.png" alt="darcom24 Logo">
+</div>
 
-  <div>
-    <label>Kundenname:</label>
-    <input type="text" id="kunde" placeholder="Max Mustermann">
-    <br>
-    <label>Artikelname:</label>
-    <input type="text" id="artikelName">
-    <label>Einzelpreis (€):</label>
-    <input type="number" id="einzelpreis" step="0.01">
-    <label>Menge:</label>
-    <input type="number" id="menge" value="1">
-    <label>MwSt (%):</label>
-    <input type="number" id="mwst" value="19">
-    <button onclick="addArtikel()">+ Artikel hinzufügen</button>
-  </div>
+<label for="kunde">Kunde:</label>
+<input type="text" id="kunde" placeholder="Kundenname">
 
-  <table id="artikelTabelle">
+<label for="adresse">Adresse:</label>
+<input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
+
+<label>Artikel (Pos, Name, Menge, Einzelpreis inkl. MwSt):</label>
+<table id="artikelTabelle">
     <thead>
-      <tr>
+    <tr>
         <th>Pos</th>
         <th>Artikel</th>
         <th>Menge</th>
-        <th>Einzelpreis</th>
-        <th>Gesamt</th>
-      </tr>
+        <th>Einzelpreis (€)</th>
+        <th>Gesamtpreis (€)</th>
+        <th></th>
+    </tr>
     </thead>
     <tbody></tbody>
-  </table>
+</table>
 
-  <div id="buttons">
-    <button onclick="generatePDF()">PDF herunterladen</button>
-    <button onclick="exportCSV()">CSV Export</button>
+<div class="artikel-buttons no-print" id="artikelButtons"></div>
+
+<div class="no-print">
     <button onclick="window.print()">Drucken</button>
-  </div>
+    <button id="exportCSV">CSV Export</button>
+    <button onclick="downloadPDF()">PDF herunterladen</button>
+    <button onclick="addRow()">+ Artikel hinzufügen</button>
+</div>
 
-  <p id="footer-link">
-    <a href="https://darcom24de.github.io/rechnung/" style="font-size: 10px;">https://darcom24de.github.io/rechnung/</a>
-  </p>
+<script>
+function addRow(name = '', menge = 1, preis = 0) {
+    const table = document.querySelector('#artikelTabelle tbody');
+    const row = document.createElement('tr');
+    const pos = table.rows.length + 1;
+    row.innerHTML = `
+        <td>${pos}</td>
+        <td><input type="text" value="${name}" placeholder="Artikel"></td>
+        <td><input type="number" value="${menge}" min="1" onchange="updateGesamtpreis(this)"></td>
+        <td><input type="number" value="${preis}" min="0" step="0.01" onchange="updateGesamtpreis(this)"></td>
+        <td>${(menge * preis).toFixed(2)} €</td>
+        <td><button onclick="removeRow(this)">✕</button></td>
+    `;
+    table.appendChild(row);
+    updatePositions();
+    updateTotalSum();
+}
 
-  <script src="script.js"></script>
+function removeRow(btn) {
+    btn.closest('tr').remove();
+    updatePositions();
+    updateTotalSum();
+}
+
+function updatePositions() {
+    const rows = document.querySelectorAll('#artikelTabelle tbody tr');
+    rows.forEach((row, index) => {
+        row.cells[0].textContent = index + 1;
+    });
+}
+
+function updateGesamtpreis(input) {
+    const row = input.closest('tr');
+    const menge = parseInt(row.cells[2].querySelector('input').value) || 0;
+    const preis = parseFloat(row.cells[3].querySelector('input').value) || 0;
+    row.cells[4].textContent = (menge * preis).toFixed(2) + ' €';
+    updateTotalSum();
+}
+
+function updateTotalSum() {
+    let total = 0;
+    const rows = document.querySelectorAll('#artikelTabelle tbody tr');
+    rows.forEach(row => {
+        const preis = parseFloat(row.cells[4].textContent.replace(' €', '')) || 0;
+        total += preis;
+    });
+
+    const netto = (total / 1.19).toFixed(2);
+    const mwst = (total - netto).toFixed(2);
+
+    let summeBox = document.getElementById('gesamtSumme');
+    if (!summeBox) {
+        summeBox = document.createElement('div');
+        summeBox.id = 'gesamtSumme';
+        document.querySelector('table').after(summeBox);
+    }
+
+    summeBox.innerHTML = `
+        <strong>Nettobetrag:</strong> ${netto} €<br>
+        <strong>19 % MwSt:</strong> ${mwst} €<br>
+        <strong>Gesamtsumme:</strong> ${total.toFixed(2)} €
+    `;
+}
+</script>
+
 </body>
 </html>
