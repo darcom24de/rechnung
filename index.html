@@ -212,8 +212,7 @@ function exportCSV() {
 
 // Erzeugt die PDF mit jsPDF und autotable inklusive MwSt Anzeige und Briefkopf mit Logo
 function downloadPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const doc = new window.jspdf.jsPDF();
 
     // Adresse (Briefkopf) links oben
     doc.setFontSize(12);
@@ -240,7 +239,7 @@ function downloadPDF() {
     doc.text(rechnungsnummerText, pageWidth - 40, 60);
 
     // Kunde darunter
-    const kunde = document.getElementById("adresse").value;
+    const kunde = document.getElementById("adresse").value || "Unbekannt";
     doc.text("Kunde: " + kunde, 14, 70);
 
     // Artikel-Tabelle vorbereiten
@@ -273,7 +272,7 @@ function downloadPDF() {
     doc.text(`MwSt 19%: ${mwstBetrag.toFixed(2)} €`, pageWidth - 60, finalY + 20, { align: 'right' });
     doc.text(`Gesamtpreis: ${bruttoSumme.toFixed(2)} €`, pageWidth - 60, finalY + 30, { align: 'right' });
 
-    doc.save(`${kunde || 'Rechnung'}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
+    doc.save(`${kunde}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
 }
 
 // Initialisierung beim Laden der Seite
