@@ -94,16 +94,12 @@
     Pankstraße 46<br>
     13357 Berlin<br>
     USt-ID-Nr.: DE353633206
-
-
 </div>
 <div class="header">
-
     <h2 style="display: flex; justify-content: space-between; align-items: center;">
-  RECHNUNG
-  <span id="rechnungsnummer" style="font-size: 1em; font-weight: normal;"></span>
-</h2>
-
+        RECHNUNG
+        <span id="rechnungsnummer" style="font-size: 1em; font-weight: normal;"></span>
+    </h2>
     <img src="logo-darcom.png" alt="darcom24 Logo">
 </div>
 
@@ -116,14 +112,14 @@
 <label>Artikel (Pos, Name, Menge, Einzelpreis inkl. MwSt):</label>
 <table id="artikelTabelle">
     <thead>
-    <tr>
-        <th>Pos</th>
-        <th>Artikel</th>
-        <th>Menge</th>
-        <th>Einzelpreis (€)</th>
-        <th>Gesamtpreis (€)</th>
-        <th></th>
-    </tr>
+        <tr>
+            <th>Pos</th>
+            <th>Artikel</th>
+            <th>Menge</th>
+            <th>Einzelpreis (€)</th>
+            <th>Gesamtpreis (€)</th>
+            <th></th>
+        </tr>
     </thead>
     <tbody></tbody>
 </table>
@@ -138,68 +134,89 @@
 </div>
 
 <script>
-function addRow(name = '', menge = 1, preis = 0) {
-    const table = document.querySelector('#artikelTabelle tbody');
-    const row = document.createElement('tr');
-    const pos = table.rows.length + 1;
-    row.innerHTML = `
-        <td>${pos}</td>
-        <td><input type="text" value="${name}" placeholder="Artikel"></td>
-        <td><input type="number" value="${menge}" min="1" onchange="updateGesamtpreis(this)"></td>
-        <td><input type="number" value="${preis}" min="0" step="0.01" onchange="updateGesamtpreis(this)"></td>
-        <td>${(menge * preis).toFixed(2)} €</td>
-        <td><button onclick="removeRow(this)">✕</button></td>
-    `;
-    table.appendChild(row);
-    updatePositions();
-    updateTotalSum();
+let artikelListe = [];
+let aktuelleRechnungsnummer = 1;
+
+function getNextInvoiceNumber() {
+    let lastNumber = localStorage.getItem('rechnungsnummer');
+    let nextNumber = lastNumber ? parseInt(lastNumber) + 1 : 1;
+    localStorage.setItem('rechnungsnummer', nextNumber);
+    aktuelleRechnungsnummer = nextNumber;
+    return nextNumber;
 }
 
-function removeRow(btn) {
-    btn.closest('tr').remove();
-    updatePositions();
-    updateTotalSum();
+function updateInvoiceNumberDisplay() {
+    const number = getNextInvoiceNumber();
+    const formatted = 'Nr. ' + number.toString().padStart(4, '0');
+    document.getElementById('rechnungsnummer').textContent = formatted;
 }
 
-function updatePositions() {
-    const rows = document.querySelectorAll('#artikelTabelle tbody tr');
-    rows.forEach((row, index) => {
-        row.cells[0].textContent = index + 1;
+function addArtikel() {
+    const artikelName = document.getElementById('artikelName').value;
+    const einzelpreis = parseFloat(document.getElementById('einzelpreis').value);
+    const menge = parseInt(document.getElementById('menge').value) || 1;
+    const mwst = parseFloat(document.getElementById('mwst').value) || 0;
+
+    if (!artikelName || isNaN(einzelpreis)) return;
+
+    const gesamt = (einzelpreis * menge).toFixed(2);
+    artikelListe.push({ artikelName, menge, einzelpreis, gesamt });
+
+    renderTabelle();
+}
+
+function renderTabelle() {
+    const tbody = document.querySelector("#artikelTabelle tbody");
+    tbody.innerHTML = "";
+
+    artikelListe.forEach((artikel, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${artikel.artikelName}</td>
+            <td>${artikel.menge}</td>
+            <td>${artikel.einzelpreis.toFixed(2)} €</td>
+            <td>${artikel.gesamt} €</td>
+        `;
+        tbody.appendChild(tr);
     });
 }
 
-function updateGesamtpreis(input) {
-    const row = input.closest('tr');
-    const menge = parseInt(row.cells[2].querySelector('input').value) || 0;
-    const preis = parseFloat(row.cells[3].querySelector('input').value) || 0;
-    row.cells[4].textContent = (menge * preis).toFixed(2) + ' €';
-    updateTotalSum();
-}
+async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
 
-function updateTotalSum() {
-    let total = 0;
-    const rows = document.querySelectorAll('#artikelTabelle tbody tr');
-    rows.forEach(row => {
-        const preis = parseFloat(row.cells[4].textContent.replace(' €', '')) || 0;
-        total += preis;
+    doc.setFontSize(18);
+    doc.text("RECHNUNG", 14, 20);
+
+    const seitenbreite = doc.internal.pageSize.getWidth();
+    const rechnungsnummerText = 'Nr. ' + aktuelleRechnungsnummer.toString().padStart(4, '0');
+    doc.setFontSize(12);
+    doc.text(rechnungsnummerText, seitenbreite - 40, 20);
+
+    const kunde = document.getElementById("kunde").value;
+    doc.text("Kunde: " + kunde, 14, 30);
+
+    const tableData = artikelListe.map((artikel, index) => ([
+        (index + 1).toString(),
+        artikel.artikelName,
+        artikel.menge.toString(),
+        artikel.einzelpreis.toFixed(2) + " €",
+        artikel.gesamt + " €"
+    ]));
+
+    doc.autoTable({
+        head: [["Pos", "Artikel", "Menge", "Einzelpreis", "Gesamt"]],
+        body: tableData,
+        startY: 40
     });
 
-    const netto = (total / 1.19).toFixed(2);
-    const mwst = (total - netto).toFixed(2);
-
-    let summeBox = document.getElementById('gesamtSumme');
-    if (!summeBox) {
-        summeBox = document.createElement('div');
-        summeBox.id = 'gesamtSumme';
-        document.querySelector('table').after(summeBox);
-    }
-
-    summeBox.innerHTML = `
-        <strong>Nettobetrag:</strong> ${netto} €<br>
-        <strong>19 % MwSt:</strong> ${mwst} €<br>
-        <strong>Gesamtsumme:</strong> ${total.toFixed(2)} €
-    `;
+    doc.save(`${kunde || "Rechnung"}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
 }
+
+window.onload = function () {
+    updateInvoiceNumberDisplay();
+};
 </script>
 
 </body>
