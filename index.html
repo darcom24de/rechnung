@@ -78,9 +78,9 @@
 </div>
 <div class="header">
     <h2 style="display: flex; align-items: center; gap: 0.3rem;">
-  RECHNUNG
-  <span id="rechnungsnummer" style="font-weight: normal;"></span>
-</h2>
+        RECHNUNG
+        <span id="rechnungsnummer" style="font-weight: normal;"></span>
+    </h2>
 
     <img src="logo-darcom.png" alt="darcom24 Logo">
 </div>
@@ -265,6 +265,8 @@ window.onload = function () {
     if(document.querySelector("#artikelTabelle tbody tr").length === 0) {
         addRow();
         setTimeout(() => updateTotalSum(), 10);
+    } else {
+        updateTotalSum();
     }
 };
 </script>
