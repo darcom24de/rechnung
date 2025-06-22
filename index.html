@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Rechnung – darcom24</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -71,22 +71,21 @@
 </head>
 <body>
 <div class="print" style="text-align: left; margin-bottom: 10px;">
-    <strong>HC-Shop</strong><br>
-    Pankstraße 46<br>
-    13357 Berlin<br>
+    <strong>HC-Shop</strong><br />
+    Pankstraße 46<br />
+    13357 Berlin<br />
     USt-ID-Nr.: DE353633206
 </div>
 <div class="header">
     <h2 style="display: flex; align-items: center; gap: 0.3rem;">
-  RECHNUNG
-  <span id="rechnungsnummer" style="font-weight: normal;"></span>
-</h2>
-
-    <img src="logo-darcom.png" alt="darcom24 Logo">
+        RECHNUNG
+        <span id="rechnungsnummer" style="font-weight: normal;"></span>
+    </h2>
+    <img src="logo-darcom.png" alt="darcom24 Logo" />
 </div>
 
 <label for="adresse">Kunde:</label>
-<input type="text" id="adresse" placeholder="Kunde, Straße, PLZ, Ort">
+<input type="text" id="adresse" placeholder="Kunde, Straße, PLZ, Ort" />
 
 <label>Artikel (Pos, Name, Menge, Einzelpreis inkl. MwSt):</label>
 <table id="artikelTabelle">
@@ -103,7 +102,6 @@
     <tbody></tbody>
 </table>
 
-<!-- NEU: Anzeige Netto, MwSt und Brutto unter der Tabelle -->
 <div id="rechnungSumme"></div>
 
 <div class="no-print">
@@ -210,38 +208,34 @@ function exportCSV() {
     URL.revokeObjectURL(url);
 }
 
-// PDF generieren mit jsPDF + autotable
+// Erzeugt die PDF mit jsPDF und autotable inklusive MwSt Anzeige und Briefkopf mit Logo
 function downloadPDF() {
-    const doc = new window.jspdf.jsPDF();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
 
-    // Briefkopf
     doc.setFontSize(12);
     doc.text("HC-Shop", 14, 20);
     doc.text("Pankstraße 46", 14, 27);
     doc.text("13357 Berlin", 14, 34);
     doc.text("USt-ID-Nr.: DE353633206", 14, 41);
 
-    // Logo rechts oben (Base64-Platzhalter)
+    // Logo rechts oben als Base64 (Beispiel schwarz-weiß Platzhalter)
     const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAYAAAA8AXHiAAAABHNCSVQICAgIfAhkiAAAARlJREFUeJzt3TEKwzAQRVFz0HjTR0KXepNXSNHyk+H2AJV4LF1nJ7vzW5s3zG8CyDMOQCgs7sBG2AwCziAp5Ak9A1SDXEC0xL2k4rXrQ0TOVJqYAdRJomwp0gcUlTggpVJxOympcC5ShD+jGC/QyCgBDQgAVNgLC1VITR1JhYQAUrKMNVzJSDQZTkGcFgFQi8u8yEBYBJR4KuF8EEgt9BohqFzITFlvA6LBGmWlHVk0qUU1xSJCt0l+5zE6pH4lFeW+1T3ZqioiE+QiAH3zH4vr5e7QDE7OTe/YvEfAAAAAElFTkSuQmCC";
     const pageWidth = doc.internal.pageSize.getWidth();
     const logoWidth = 40;
     const logoHeight = 40;
     doc.addImage(logoBase64, 'PNG', pageWidth - logoWidth - 14, 14, logoWidth, logoHeight);
 
-    // Titel
     doc.setFontSize(18);
     doc.text("RECHNUNG", pageWidth / 2, 60, { align: 'center' });
 
-    // Rechnungsnummer rechts
     const rechnungsnummerText = 'Nr. ' + aktuelleRechnungsnummer.toString().padStart(4, '0');
     doc.setFontSize(12);
     doc.text(rechnungsnummerText, pageWidth - 50, 60);
 
-    // Kunde
     const kunde = document.getElementById("adresse").value || "Unbekannt";
     doc.text("Kunde: " + kunde, 14, 75);
 
-    // Tabelle Daten sammeln
     const data = [];
     let bruttoSumme = 0;
     const mwstSatz = 0.19;
@@ -273,12 +267,12 @@ function downloadPDF() {
     doc.text(`MwSt 19%: ${mwstBetrag.toFixed(2)} €`, pageWidth - 14, finalY + 20, { align: 'right' });
     doc.text(`Gesamtpreis: ${bruttoSumme.toFixed(2)} €`, pageWidth - 14, finalY + 30, { align: 'right' });
 
-    // Sicherer Dateiname (Leerzeichen → Unterstriche)
+    // Dateiname mit Kunde und Rechnungsnummer, Leerzeichen entfernt
     const safeKunde = kunde.replace(/\s+/g, '_').replace(/[^\w\-]/g, '');
     doc.save(`${safeKunde}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
 }
 
-// Seite initialisieren
+// Initialisierung beim Laden der Seite
 window.onload = function () {
     updateInvoiceNumberDisplay();
     if(document.querySelector("#artikelTabelle tbody tr").length === 0) {
