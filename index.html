@@ -263,7 +263,10 @@ function downloadPDF() {
 // Initialisierung beim Laden der Seite
 window.onload = function () {
     updateInvoiceNumberDisplay();
-    if(document.querySelector("#artikelTabelle tbody tr").length === 0) addRow();
+    if(document.querySelector("#artikelTabelle tbody tr").length === 0) {
+        addRow();
+        updateTotalSum();
+    }
 };
 </script>
 
