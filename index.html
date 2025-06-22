@@ -13,18 +13,43 @@
     input, select, button {
       margin: 5px;
     }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 6px;
+      text-align: left;
+    }
     #buttons {
       margin-top: 15px;
+    }
+    @media print {
+      #buttons, #footer-link {
+        display: none;
+      }
+    }
+    #logo {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 120px;
     }
   </style>
 </head>
 <body>
 
+  <img src="logo.png" id="logo" alt="Logo">
+
   <h2>RECHNUNG</h2>
 
   <div>
-    <label>Kunde:</label>
-    <input type="text" id="kunde">
+    <label>Kundenname:</label>
+    <input type="text" id="kunde" placeholder="Max Mustermann">
     <br>
     <label>Artikelname:</label>
     <input type="text" id="artikelName">
@@ -37,7 +62,7 @@
     <button onclick="addArtikel()">+ Artikel hinzufügen</button>
   </div>
 
-  <table id="artikelTabelle" border="1" cellspacing="0" cellpadding="4">
+  <table id="artikelTabelle">
     <thead>
       <tr>
         <th>Pos</th>
@@ -47,13 +72,18 @@
         <th>Gesamt</th>
       </tr>
     </thead>
-    <tbody>
-    </tbody>
+    <tbody></tbody>
   </table>
 
   <div id="buttons">
     <button onclick="generatePDF()">PDF herunterladen</button>
+    <button onclick="exportCSV()">CSV Export</button>
+    <button onclick="window.print()">Drucken</button>
   </div>
+
+  <p id="footer-link">
+    <a href="https://darcom24de.github.io/rechnung/" style="font-size: 10px;">https://darcom24de.github.io/rechnung/</a>
+  </p>
 
   <script src="script.js"></script>
 </body>
