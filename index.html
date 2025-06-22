@@ -188,7 +188,7 @@ function updateTotalSum() {
 
     const nettoText = `Nettobetrag: ${nettoSumme.toFixed(2)} €`;
     const mwstText = `MwSt ${mwstSatz * 100}%: ${mwstBetrag.toFixed(2)} €`;
-    const bruttoText = `Gesamtpreis (brutto): ${bruttoSumme.toFixed(2)} €`;
+    const bruttoText = `Gesamtpreis: ${bruttoSumme.toFixed(2)} €`;
 
     document.getElementById('rechnungSumme').innerHTML =
         `${nettoText}<br>${mwstText}<br><b>${bruttoText}</b>`;
