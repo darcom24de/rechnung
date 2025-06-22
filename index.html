@@ -210,39 +210,38 @@ function exportCSV() {
     URL.revokeObjectURL(url);
 }
 
-// Erzeugt die PDF mit jsPDF und autotable inklusive MwSt Anzeige und Briefkopf mit Logo
+// PDF generieren mit jsPDF + autotable
 function downloadPDF() {
     const doc = new window.jspdf.jsPDF();
 
-    // Adresse (Briefkopf) links oben
+    // Briefkopf
     doc.setFontSize(12);
     doc.text("HC-Shop", 14, 20);
     doc.text("Pankstraße 46", 14, 27);
     doc.text("13357 Berlin", 14, 34);
     doc.text("USt-ID-Nr.: DE353633206", 14, 41);
 
-    // Logo rechts oben als Base64 (Beispiel schwarz-weiß Platzhalter)
-    // Ersetze das hier mit deinem eigenen Logo-Base64!
+    // Logo rechts oben (Base64-Platzhalter)
     const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAYAAAA8AXHiAAAABHNCSVQICAgIfAhkiAAAARlJREFUeJzt3TEKwzAQRVFz0HjTR0KXepNXSNHyk+H2AJV4LF1nJ7vzW5s3zG8CyDMOQCgs7sBG2AwCziAp5Ak9A1SDXEC0xL2k4rXrQ0TOVJqYAdRJomwp0gcUlTggpVJxOympcC5ShD+jGC/QyCgBDQgAVNgLC1VITR1JhYQAUrKMNVzJSDQZTkGcFgFQi8u8yEBYBJR4KuF8EEgt9BohqFzITFlvA6LBGmWlHVk0qUU1xSJCt0l+5zE6pH4lFeW+1T3ZqioiE+QiAH3zH4vr5e7QDE7OTe/YvEfAAAAAElFTkSuQmCC";
     const pageWidth = doc.internal.pageSize.getWidth();
     const logoWidth = 40;
     const logoHeight = 40;
     doc.addImage(logoBase64, 'PNG', pageWidth - logoWidth - 14, 14, logoWidth, logoHeight);
 
-    // Titel "RECHNUNG" mittig
+    // Titel
     doc.setFontSize(18);
     doc.text("RECHNUNG", pageWidth / 2, 60, { align: 'center' });
 
-    // Rechnungsnummer rechts neben "RECHNUNG"
+    // Rechnungsnummer rechts
     const rechnungsnummerText = 'Nr. ' + aktuelleRechnungsnummer.toString().padStart(4, '0');
     doc.setFontSize(12);
-    doc.text(rechnungsnummerText, pageWidth - 40, 60);
+    doc.text(rechnungsnummerText, pageWidth - 50, 60);
 
-    // Kunde darunter
+    // Kunde
     const kunde = document.getElementById("adresse").value || "Unbekannt";
-    doc.text("Kunde: " + kunde, 14, 70);
+    doc.text("Kunde: " + kunde, 14, 75);
 
-    // Artikel-Tabelle vorbereiten
+    // Tabelle Daten sammeln
     const data = [];
     let bruttoSumme = 0;
     const mwstSatz = 0.19;
@@ -262,20 +261,24 @@ function downloadPDF() {
     doc.autoTable({
         head: [["Pos", "Artikel", "Menge", "Einzelpreis", "Gesamt"]],
         body: data,
-        startY: 80
+        startY: 85,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [220, 220, 220] }
     });
 
-    const finalY = doc.lastAutoTable.finalY || 80;
+    const finalY = doc.lastAutoTable.finalY || 85;
 
     doc.setFontSize(12);
-    doc.text(`Nettobetrag: ${nettoSumme.toFixed(2)} €`, pageWidth - 60, finalY + 10, { align: 'right' });
-    doc.text(`MwSt 19%: ${mwstBetrag.toFixed(2)} €`, pageWidth - 60, finalY + 20, { align: 'right' });
-    doc.text(`Gesamtpreis: ${bruttoSumme.toFixed(2)} €`, pageWidth - 60, finalY + 30, { align: 'right' });
+    doc.text(`Nettobetrag: ${nettoSumme.toFixed(2)} €`, pageWidth - 14, finalY + 10, { align: 'right' });
+    doc.text(`MwSt 19%: ${mwstBetrag.toFixed(2)} €`, pageWidth - 14, finalY + 20, { align: 'right' });
+    doc.text(`Gesamtpreis: ${bruttoSumme.toFixed(2)} €`, pageWidth - 14, finalY + 30, { align: 'right' });
 
-    doc.save(`${kunde}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
+    // Sicherer Dateiname (Leerzeichen → Unterstriche)
+    const safeKunde = kunde.replace(/\s+/g, '_').replace(/[^\w\-]/g, '');
+    doc.save(`${safeKunde}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
 }
 
-// Initialisierung beim Laden der Seite
+// Seite initialisieren
 window.onload = function () {
     updateInvoiceNumberDisplay();
     if(document.querySelector("#artikelTabelle tbody tr").length === 0) {
