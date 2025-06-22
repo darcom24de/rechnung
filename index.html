@@ -62,6 +62,11 @@
                 display: none !important;
             }
         }
+        #rechnungSumme {
+            text-align: right;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -97,6 +102,9 @@
     </thead>
     <tbody></tbody>
 </table>
+
+<!-- NEU: Anzeige Netto, MwSt und Brutto unter der Tabelle -->
+<div id="rechnungSumme"></div>
 
 <div class="no-print">
     <button onclick="window.print()">Drucken</button>
@@ -163,15 +171,27 @@ function updateGesamtpreis(input) {
     updateTotalSum();
 }
 
-// Berechnet und zeigt die Gesamtsumme (optional)
+// Berechnet und zeigt die Gesamtsumme (Netto, MwSt, Brutto)
 function updateTotalSum() {
-    let total = 0;
+    const mwstSatz = 0.19; // 19% MwSt
+    let bruttoSumme = 0;
+
     document.querySelectorAll('#artikelTabelle tbody tr').forEach(row => {
-        const preis = parseFloat(row.cells[4].textContent.replace(' €', '')) || 0;
-        total += preis;
+        const preisText = row.cells[4].textContent || '';
+        // Falls Komma als Dezimaltrennzeichen, ersetzen wir durch Punkt
+        const preis = parseFloat(preisText.replace(' €', '').replace(',', '.')) || 0;
+        bruttoSumme += preis;
     });
-    // Hier kannst du Summe ausgeben, z.B.:
-    // console.log('Gesamt:', total.toFixed(2) + ' €');
+
+    const nettoSumme = bruttoSumme / (1 + mwstSatz);
+    const mwstBetrag = bruttoSumme - nettoSumme;
+
+    const nettoText = `Nettobetrag: ${nettoSumme.toFixed(2)} €`;
+    const mwstText = `MwSt ${mwstSatz * 100}%: ${mwstBetrag.toFixed(2)} €`;
+    const bruttoText = `Gesamtpreis (brutto): ${bruttoSumme.toFixed(2)} €`;
+
+    document.getElementById('rechnungSumme').innerHTML =
+        `${nettoText}<br>${mwstText}<br><b>${bruttoText}</b>`;
 }
 
 // Exportiert die Artikelliste als CSV-Datei
@@ -191,7 +211,7 @@ function exportCSV() {
     URL.revokeObjectURL(url);
 }
 
-// Erzeugt die PDF mit jsPDF und autotable
+// Erzeugt die PDF mit jsPDF und autotable inklusive MwSt Anzeige
 function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -209,19 +229,33 @@ function downloadPDF() {
 
     // Tabelle vorbereiten
     const data = [];
+    let bruttoSumme = 0;
+    const mwstSatz = 0.19;
+
     document.querySelectorAll('#artikelTabelle tbody tr').forEach((row, i) => {
         const artikel = row.cells[1].querySelector('input').value || '';
         const menge = row.cells[2].querySelector('input').value || '';
         const preis = row.cells[3].querySelector('input').value || '';
-        const gesamt = row.cells[4].textContent || '';
-        data.push([ (i+1).toString(), artikel, menge, preis + ' €', gesamt ]);
+        const gesamtText = row.cells[4].textContent || '';
+        data.push([ (i+1).toString(), artikel, menge, preis + ' €', gesamtText ]);
+        bruttoSumme += parseFloat(gesamtText.replace(' €', '').replace(',', '.')) || 0;
     });
+
+    const nettoSumme = bruttoSumme / (1 + mwstSatz);
+    const mwstBetrag = bruttoSumme - nettoSumme;
 
     doc.autoTable({
         head: [["Pos", "Artikel", "Menge", "Einzelpreis", "Gesamt"]],
         body: data,
         startY: 40
     });
+
+    const finalY = doc.lastAutoTable.finalY || 40;
+
+    doc.setFontSize(12);
+    doc.text(`Nettobetrag: ${nettoSumme.toFixed(2)} €`, width - 60, finalY + 10, { align: 'right' });
+    doc.text(`MwSt 19%: ${mwstBetrag.toFixed(2)} €`, width - 60, finalY + 20, { align: 'right' });
+    doc.text(`Gesamtpreis (brutto): ${bruttoSumme.toFixed(2)} €`, width - 60, finalY + 30, { align: 'right' });
 
     doc.save(`${kunde || 'Rechnung'}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
 }
