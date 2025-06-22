@@ -165,3 +165,24 @@ window.onload = function () {
   // z. B. buttons vorbereiten etc.
 };
 
+  <script>
+  let aktuelleRechnungsnummer = 1;
+
+  function getNextInvoiceNumber() {
+    let lastNumber = localStorage.getItem('rechnungsnummer');
+    let nextNumber = lastNumber ? parseInt(lastNumber) + 1 : 1;
+    localStorage.setItem('rechnungsnummer', nextNumber);
+    aktuelleRechnungsnummer = nextNumber;
+    return nextNumber;
+  }
+
+  function updateInvoiceNumberDisplay() {
+    const number = getNextInvoiceNumber();
+    const formatted = 'Nr. ' + number.toString().padStart(4, '0');
+    document.getElementById('rechnungsnummer').textContent = formatted;
+  }
+
+  window.onload = function () {
+    updateInvoiceNumberDisplay();
+  };
+</script>
