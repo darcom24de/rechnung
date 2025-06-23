@@ -147,3 +147,8 @@ window.onload = function () {
     setTimeout(() => updateTotalSum(), 10);
   }
 };
+// Datum anzeigen
+const heute = new Date();
+const datumFormat = heute.toLocaleDateString('de-DE');
+document.getElementById('heutigesDatum').textContent = "Datum: " + datumFormat;
+
