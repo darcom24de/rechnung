@@ -77,6 +77,10 @@
   </style>
 </head>
 <body>
+  <div style="background: yellow; color: black; padding: 4px; margin-bottom: 10px;">
+    Test Text oben im Body sichtbar?
+  </div>
+
   <div class="print" style="text-align: left; margin-bottom: 10px;">
     <strong>HC-Shop</strong><br />
     Pankstraße 46<br />
@@ -266,18 +270,23 @@
       doc.save(`${safeName}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
     }
 
-    // === HIER: Datum anzeigen sobald DOM geladen ist ===
+    // === HIER: Datum anzeigen sobald DOM geladen ist + Debug ===
     document.addEventListener('DOMContentLoaded', function () {
+      const datumElement = document.getElementById('heutigesDatum');
+      console.log('Datum Element:', datumElement);
+      if (datumElement) {
+        const heute = new Date();
+        const datumFormat = heute.toLocaleDateString('de-DE');
+        datumElement.textContent = "Datum: " + datumFormat;
+      } else {
+        console.warn('Element mit id "heutigesDatum" nicht gefunden!');
+      }
+
       updateInvoiceNumberDisplay();
+
       if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
         addRow();
         setTimeout(() => updateTotalSum(), 10);
-      }
-      const heute = new Date();
-      const datumFormat = heute.toLocaleDateString('de-DE');
-      const datumElement = document.getElementById('heutigesDatum');
-      if (datumElement) {
-        datumElement.textContent = "Datum: " + datumFormat;
       }
     });
   </script>
