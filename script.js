@@ -153,3 +153,19 @@ window.onload = function () {
     setTimeout(() => updateTotalSum(), 10);
   }
 };
+window.onload = function () {
+  // Rechnungsnummer erzeugen
+  updateInvoiceNumberDisplay();
+
+  // Falls keine Artikel vorhanden, einen leeren hinzufügen
+  if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
+    addRow();
+    setTimeout(() => updateTotalSum(), 10);
+  }
+
+  // ✅ Datum unter dem Logo anzeigen
+  const heute = new Date();
+  const datumFormat = heute.toLocaleDateString('de-DE');
+  document.getElementById('heutigesDatum').textContent = "Datum: " + datumFormat;
+};
+
