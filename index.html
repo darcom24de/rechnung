@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-   <meta charset="UTF-8" />
+  <meta charset="UTF-8" />
   <title>Rechnung – darcom24</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <script>
-    window.jsPDF = window.jspdf.jsPDF; // wichtig: jsPDF global verfügbar machen
-  </script>
   <style>
     body {
       font-family: sans-serif;
@@ -24,7 +21,7 @@
     .header-left {
       display: flex;
       flex-direction: column;
-      align-items: flex-start; /* linksbündig */
+      align-items: flex-start;
       gap: 6px;
     }
     .header img {
@@ -79,7 +76,6 @@
   </style>
 </head>
 <body>
-
   <div class="print" style="text-align: left; margin-bottom: 10px;">
     <strong>HC-Shop</strong><br />
     Pankstraße 46<br />
@@ -89,10 +85,10 @@
 
   <div class="header">
     <div class="header-left">
-      <h2 style="margin: 0;"><br>
+      <h2 style="margin: 0;">
         RECHNUNG <span id="rechnungsnummer" style="font-weight: normal;"></span>
       </h2>
-      <div id="heutigesDatum" style="font-size: 14px; color: black; margin-top: 4px;">&nbsp;</div>
+      <div id="heutigesDatum" style="font-size: 14px; color: black; margin-top: 4px;"></div>
     </div>
     <div>
       <img src="logo-darcom.png" alt="darcom24 Logo" />
@@ -213,19 +209,15 @@
       URL.revokeObjectURL(url);
     }
 
-    async function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+    function downloadPDF() {
+      const doc = new window.jspdf.jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
 
       doc.setFontSize(12);
       doc.text("HC-Shop", 14, 20);
       doc.text("Pankstraße 46", 14, 27);
       doc.text("13357 Berlin", 14, 34);
       doc.text("USt-ID-Nr.: DE353633206", 14, 41);
-
-      const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAYAAAA8AXHiAAAABHNCSVQICAgIfAhkiAAAARlJREFUeJzt3TEKwzAQRVFz0HjTR0KXepNXSNHyk+H2AJV4LF1nJ7vzW5s3zG8CyDMOQCgs7sBG2AwCziAp5Ak9A1SDXEC0xL2k4rXrQ0TOVJqYAdRJomwp0gcUlTggpVJxOympcC5ShD+jGC/QyCgBDQgAVNgLC1VITR1JhYQAUrKMNVzJSDQZTkGcFgFQi8u8yEBYBJR4KuF8EEgt9BohqFzITFlvA6LBGmWlHVk0qUU1xSJCt0l+5zE6pH4lFeW+1T3ZqioiE+QiAH3zH4vr5e7QDE7OTe/YvEfAAAAAElFTkSuQmCC";
-      const pageWidth = doc.internal.pageSize.getWidth();
-      doc.addImage(logoBase64, 'PNG', pageWidth - 54, 14, 40, 40);
 
       doc.setFontSize(18);
       doc.text("RECHNUNG", pageWidth / 2, 60, { align: 'center' });
@@ -237,8 +229,8 @@
       const kunde = document.getElementById("adresse").value || "Unbekannt";
       doc.text("Kunde: " + kunde, 14, 75);
 
-      const mwstSatz = 0.19;
       let bruttoSumme = 0;
+      const mwstSatz = 0.19;
       const data = [];
 
       document.querySelectorAll('#artikelTabelle tbody tr').forEach((row, i) => {
@@ -260,7 +252,6 @@
       });
 
       const finalY = doc.lastAutoTable.finalY || 90;
-
       doc.text(`Nettobetrag: ${nettoSumme.toFixed(2)} €`, pageWidth - 14, finalY + 10, { align: 'right' });
       doc.text(`MwSt 19%: ${mwstBetrag.toFixed(2)} €`, pageWidth - 14, finalY + 20, { align: 'right' });
       doc.text(`Gesamtpreis: ${bruttoSumme.toFixed(2)} €`, pageWidth - 14, finalY + 30, { align: 'right' });
@@ -269,24 +260,15 @@
       doc.save(`${safeName}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
     }
 
-    // === HIER: Datum anzeigen sobald DOM geladen ist + Debug ===
     document.addEventListener('DOMContentLoaded', function () {
-      const datumElement = document.getElementById('heutigesDatum');
-      console.log('Datum Element:', datumElement);
-      if (datumElement) {
-        const heute = new Date();
-        const datumFormat = heute.toLocaleDateString('de-DE');
-        datumElement.textContent = "Datum: " + datumFormat;
-      } else {
-        console.warn('Element mit id "heutigesDatum" nicht gefunden!');
-      }
-
       updateInvoiceNumberDisplay();
-
       if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
         addRow();
         setTimeout(() => updateTotalSum(), 10);
       }
+      const heute = new Date();
+      const datumFormat = heute.toLocaleDateString('de-DE');
+      document.getElementById('heutigesDatum').textContent = "Datum: " + datumFormat;
     });
   </script>
 </body>
