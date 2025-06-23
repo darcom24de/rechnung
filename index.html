@@ -5,6 +5,10 @@
   <title>Rechnung – darcom24</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script>
+    // jsPDF global machen
+    window.jsPDF = window.jspdf.jsPDF;
+  </script>
   <style>
     body {
       font-family: sans-serif;
@@ -64,9 +68,6 @@
       .no-print {
         display: none !important;
       }
-      a[href^="http"] {
-        display: none !important;
-      }
     }
     #rechnungSumme {
       text-align: right;
@@ -76,6 +77,7 @@
   </style>
 </head>
 <body>
+
   <div class="print" style="text-align: left; margin-bottom: 10px;">
     <strong>HC-Shop</strong><br />
     Pankstraße 46<br />
@@ -88,7 +90,7 @@
       <h2 style="margin: 0;">
         RECHNUNG <span id="rechnungsnummer" style="font-weight: normal;"></span>
       </h2>
-      <div id="heutigesDatum" style="font-size: 14px; color: black; margin-top: 4px;"></div>
+      <div id="heutigesDatum" style="font-size: 14px; color: black;">Datum: </div>
     </div>
     <div>
       <img src="logo-darcom.png" alt="darcom24 Logo" />
@@ -126,17 +128,16 @@
     let aktuelleRechnungsnummer = 1;
 
     function getNextInvoiceNumber() {
-      let lastNumber = localStorage.getItem('rechnungsnummer');
-      let nextNumber = lastNumber ? parseInt(lastNumber) + 1 : 1;
-      localStorage.setItem('rechnungsnummer', nextNumber);
-      aktuelleRechnungsnummer = nextNumber;
-      return nextNumber;
+      let last = localStorage.getItem('rechnungsnummer');
+      let next = last ? parseInt(last) + 1 : 1;
+      localStorage.setItem('rechnungsnummer', next);
+      aktuelleRechnungsnummer = next;
+      return next;
     }
 
     function updateInvoiceNumberDisplay() {
-      const number = getNextInvoiceNumber();
-      const formatted = 'Nr. ' + number.toString().padStart(4, '0');
-      document.getElementById('rechnungsnummer').textContent = formatted;
+      const num = getNextInvoiceNumber();
+      document.getElementById('rechnungsnummer').textContent = 'Nr. ' + num.toString().padStart(4, '0');
     }
 
     function addRow(name = '', menge = 1, preis = 0) {
@@ -145,7 +146,7 @@
       const pos = tbody.rows.length + 1;
       row.innerHTML = `
         <td>${pos}</td>
-        <td><input type="text" placeholder="Artikelname" value="${name}"></td>
+        <td><input type="text" value="${name}"></td>
         <td><input type="number" min="1" value="${menge}" onchange="updateGesamtpreis(this)"></td>
         <td><input type="number" min="0" step="0.01" value="${preis}" onchange="updateGesamtpreis(this)"></td>
         <td>0.00 €</td>
@@ -175,29 +176,27 @@
     }
 
     function updateTotalSum() {
-      const mwstSatz = 0.19;
-      let bruttoSumme = 0;
-
+      const mwst = 0.19;
+      let brutto = 0;
       document.querySelectorAll('#artikelTabelle tbody tr').forEach(row => {
-        const preisText = row.cells[4].textContent || '';
-        const preis = parseFloat(preisText.replace(' €', '').replace(',', '.')) || 0;
-        bruttoSumme += preis;
+        const wert = parseFloat(row.cells[4].textContent.replace(' €', '')) || 0;
+        brutto += wert;
       });
-
-      const nettoSumme = bruttoSumme / (1 + mwstSatz);
-      const mwstBetrag = bruttoSumme - nettoSumme;
-
+      const netto = brutto / (1 + mwst);
+      const steuer = brutto - netto;
       document.getElementById('rechnungSumme').innerHTML =
-        `Nettobetrag: ${nettoSumme.toFixed(2)} €<br>` +
-        `MwSt 19%: ${mwstBetrag.toFixed(2)} €<br>` +
-        `<b>Gesamtpreis: ${bruttoSumme.toFixed(2)} €</b>`;
+        `Nettobetrag: ${netto.toFixed(2)} €<br>` +
+        `MwSt 19%: ${steuer.toFixed(2)} €<br>` +
+        `<b>Gesamtpreis: ${brutto.toFixed(2)} €</b>`;
     }
 
     function exportCSV() {
       let csv = 'Pos,Artikel,Menge,Einzelpreis,Gesamtpreis\n';
       document.querySelectorAll('#artikelTabelle tbody tr').forEach(row => {
         const cols = Array.from(row.cells).slice(0, 5);
-        const values = cols.map(td => td.textContent.replace(' €', '').trim());
+        const values = cols.map(td =>
+          td.querySelector('input') ? td.querySelector('input').value : td.textContent.replace(' €', '').trim()
+        );
         csv += values.join(',') + '\n';
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -210,65 +209,61 @@
     }
 
     function downloadPDF() {
-      const doc = new window.jspdf.jsPDF();
-      const pageWidth = doc.internal.pageSize.getWidth();
-
+      const doc = new jsPDF();
       doc.setFontSize(12);
       doc.text("HC-Shop", 14, 20);
       doc.text("Pankstraße 46", 14, 27);
       doc.text("13357 Berlin", 14, 34);
       doc.text("USt-ID-Nr.: DE353633206", 14, 41);
 
+      const pageWidth = doc.internal.pageSize.getWidth();
       doc.setFontSize(18);
       doc.text("RECHNUNG", pageWidth / 2, 60, { align: 'center' });
 
-      const rechnungsnummerText = 'Nr. ' + aktuelleRechnungsnummer.toString().padStart(4, '0');
+      const rechnungsnummer = 'Nr. ' + aktuelleRechnungsnummer.toString().padStart(4, '0');
       doc.setFontSize(12);
-      doc.text(rechnungsnummerText, pageWidth - 50, 60);
+      doc.text(rechnungsnummer, pageWidth - 50, 60);
+
+      const datum = new Date().toLocaleDateString('de-DE');
+      doc.text("Datum: " + datum, 14, 70);
 
       const kunde = document.getElementById("adresse").value || "Unbekannt";
-      doc.text("Kunde: " + kunde, 14, 75);
+      doc.text("Kunde: " + kunde, 14, 80);
 
-      let bruttoSumme = 0;
-      const mwstSatz = 0.19;
       const data = [];
-
+      let brutto = 0;
       document.querySelectorAll('#artikelTabelle tbody tr').forEach((row, i) => {
         const artikel = row.cells[1].querySelector('input').value || '';
         const menge = row.cells[2].querySelector('input').value || '';
         const preis = row.cells[3].querySelector('input').value || '';
-        const gesamtText = row.cells[4].textContent || '';
-        data.push([(i + 1).toString(), artikel, menge, preis + ' €', gesamtText]);
-        bruttoSumme += parseFloat(gesamtText.replace(' €', '').replace(',', '.')) || 0;
+        const gesamt = row.cells[4].textContent || '';
+        data.push([(i + 1).toString(), artikel, menge, preis + ' €', gesamt]);
+        brutto += parseFloat(gesamt.replace(' €', '')) || 0;
       });
 
-      const nettoSumme = bruttoSumme / (1 + mwstSatz);
-      const mwstBetrag = bruttoSumme - nettoSumme;
+      const netto = brutto / 1.19;
+      const steuer = brutto - netto;
 
       doc.autoTable({
         head: [["Pos", "Artikel", "Menge", "Einzelpreis", "Gesamt"]],
         body: data,
-        startY: 85
+        startY: 90
       });
 
-      const finalY = doc.lastAutoTable.finalY || 90;
-      doc.text(`Nettobetrag: ${nettoSumme.toFixed(2)} €`, pageWidth - 14, finalY + 10, { align: 'right' });
-      doc.text(`MwSt 19%: ${mwstBetrag.toFixed(2)} €`, pageWidth - 14, finalY + 20, { align: 'right' });
-      doc.text(`Gesamtpreis: ${bruttoSumme.toFixed(2)} €`, pageWidth - 14, finalY + 30, { align: 'right' });
+      const endY = doc.lastAutoTable.finalY || 100;
+
+      doc.text(`Nettobetrag: ${netto.toFixed(2)} €`, pageWidth - 14, endY + 10, { align: 'right' });
+      doc.text(`MwSt 19%: ${steuer.toFixed(2)} €`, pageWidth - 14, endY + 20, { align: 'right' });
+      doc.text(`Gesamtpreis: ${brutto.toFixed(2)} €`, pageWidth - 14, endY + 30, { align: 'right' });
 
       const safeName = kunde.replace(/\s+/g, '_').replace(/[^\w\-]/g, '');
-      doc.save(`${safeName}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
+      doc.save(`${safeName}_${rechnungsnummer.replace(' ', '_')}.pdf`);
     }
 
     document.addEventListener('DOMContentLoaded', function () {
       updateInvoiceNumberDisplay();
-      if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
-        addRow();
-        setTimeout(() => updateTotalSum(), 10);
-      }
-      const heute = new Date();
-      const datumFormat = heute.toLocaleDateString('de-DE');
-      document.getElementById('heutigesDatum').textContent = "Datum: " + datumFormat;
+      document.getElementById('heutigesDatum').textContent = 'Datum: ' + new Date().toLocaleDateString('de-DE');
+      addRow(); // erste Zeile automatisch hinzufügen
     });
   </script>
 </body>
