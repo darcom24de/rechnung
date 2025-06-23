@@ -22,20 +22,8 @@
     .header-left {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-    }
-    .header-left h2 {
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    #heutigesDatum {
-      font-size: 14px;
-      margin-top: 6px;
-      color: #333;
-      font-weight: 600;
-      user-select: none;
+      align-items: flex-start; /* linksbündig */
+      gap: 6px;
     }
     .header img {
       max-height: 80px;
@@ -98,10 +86,10 @@
 
   <div class="header">
     <div class="header-left">
-      <h2>
+      <h2 style="margin: 0;"><br>
         RECHNUNG <span id="rechnungsnummer" style="font-weight: normal;"></span>
       </h2>
-      <div id="heutigesDatum"></div>
+      <div id="heutigesDatum" style="font-size: 14px; color: #333;"></div>
     </div>
     <div>
       <img src="logo-darcom.png" alt="darcom24 Logo" />
@@ -285,6 +273,7 @@
         setTimeout(() => updateTotalSum(), 10);
       }
 
+      // Datum setzen - linksbündig unter Rechnung
       const heute = new Date();
       const datumFormat = heute.toLocaleDateString('de-DE');
       const datumElement = document.getElementById('heutigesDatum');
