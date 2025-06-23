@@ -86,11 +86,11 @@
 
   <div class="header">
     <div class="header-left">
-  <h2 style="margin: 0;"><br>
-    RECHNUNG <span id="rechnungsnummer" style="font-weight: normal;"></span>
-  </h2>
-  <div id="heutigesDatum" style="font-size: 14px; color: black; margin-top: 4px;">&nbsp;</div>
-</div>
+      <h2 style="margin: 0;"><br>
+        RECHNUNG <span id="rechnungsnummer" style="font-weight: normal;"></span>
+      </h2>
+      <div id="heutigesDatum" style="font-size: 14px; color: black; margin-top: 4px;">&nbsp;</div>
+    </div>
     <div>
       <img src="logo-darcom.png" alt="darcom24 Logo" />
     </div>
@@ -266,23 +266,20 @@
       doc.save(`${safeName}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
     }
 
-  window.onload = function () {
-  console.log("window.onload gestartet");
-  updateInvoiceNumberDisplay();
-  if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
-    addRow();
-    setTimeout(() => updateTotalSum(), 10);
-  }
-
-  const heute = new Date();
-  const datumFormat = heute.toLocaleDateString('de-DE');
-  const datumElement = document.getElementById('heutigesDatum');
-  if (datumElement) {
-    datumElement.textContent = "Datum: " + datumFormat;
-    console.log("Datum gesetzt:", datumElement.textContent);
-  }
-};
-
+    // === HIER: Datum anzeigen sobald DOM geladen ist ===
+    document.addEventListener('DOMContentLoaded', function () {
+      updateInvoiceNumberDisplay();
+      if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
+        addRow();
+        setTimeout(() => updateTotalSum(), 10);
+      }
+      const heute = new Date();
+      const datumFormat = heute.toLocaleDateString('de-DE');
+      const datumElement = document.getElementById('heutigesDatum');
+      if (datumElement) {
+        datumElement.textContent = "Datum: " + datumFormat;
+      }
+    });
   </script>
 </body>
 </html>
