@@ -82,10 +82,9 @@
     <h2 style="display: flex; align-items: center; gap: 0.3rem;">
       RECHNUNG <span id="rechnungsnummer" style="font-weight: normal;"></span>
     </h2>
-   <div style="display: flex; flex-direction: column; align-items: flex-end;">
-  <img src="logo-darcom.png" alt="darcom24 Logo" style="max-width: 150px;" />
-  <div id="heutigesDatum" style="font-size: 14px; margin-top: 6px;">Datum: ...</div>
-</div>
+    <div style="display: flex; flex-direction: column; align-items: flex-end;">
+      <img src="logo-darcom.png" alt="darcom24 Logo" style="max-height: 80px;" />
+      <div id="heutigesDatum" style="font-size: 14px; margin-top: 6px; color: #333;">Datum: ...</div>
     </div>
   </div>
 
@@ -259,7 +258,6 @@
       doc.save(`${safeName}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
     }
 
-    // Nur ein window.onload!
     window.onload = function () {
       updateInvoiceNumberDisplay();
       if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
