@@ -267,6 +267,7 @@
     }
 
   window.onload = function () {
+  console.log("window.onload gestartet");
   updateInvoiceNumberDisplay();
   if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
     addRow();
@@ -278,6 +279,7 @@
   const datumElement = document.getElementById('heutigesDatum');
   if (datumElement) {
     datumElement.textContent = "Datum: " + datumFormat;
+    console.log("Datum gesetzt:", datumElement.textContent);
   }
 };
 
