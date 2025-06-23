@@ -139,6 +139,12 @@ function downloadPDF() {
   const safeName = kunde.replace(/\s+/g, '_').replace(/[^\w\-]/g, '');
   doc.save(`${safeName}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
 }
+// Datum unter dem Logo anzeigen
+document.addEventListener('DOMContentLoaded', function () {
+  const heute = new Date();
+  const datumFormat = heute.toLocaleDateString('de-DE');
+  document.getElementById('heutigesDatum').textContent = "Datum: " + datumFormat;
+});
 
 window.onload = function () {
   updateInvoiceNumberDisplay();
@@ -147,8 +153,3 @@ window.onload = function () {
     setTimeout(() => updateTotalSum(), 10);
   }
 };
-// Datum anzeigen
-const heute = new Date();
-const datumFormat = heute.toLocaleDateString('de-DE');
-document.getElementById('heutigesDatum').textContent = "Datum: " + datumFormat;
-
