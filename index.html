@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Rechnung – darcom24</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
     body {
@@ -21,7 +22,7 @@
     .header-left {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      align-items: flex-start; /* linksbündig */
       gap: 6px;
     }
     .header img {
@@ -76,6 +77,7 @@
   </style>
 </head>
 <body>
+
   <div class="print" style="text-align: left; margin-bottom: 10px;">
     <strong>HC-Shop</strong><br />
     Pankstraße 46<br />
@@ -213,31 +215,25 @@
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
 
-      const pageWidth = doc.internal.pageSize.getWidth();
-      let y = 20;
-
       doc.setFontSize(12);
-      doc.text("HC-Shop", 14, y);
-      doc.text("Pankstraße 46", 14, y += 7);
-      doc.text("13357 Berlin", 14, y += 7);
-      doc.text("USt-ID-Nr.: DE353633206", 14, y += 7);
+      doc.text("HC-Shop", 14, 20);
+      doc.text("Pankstraße 46", 14, 27);
+      doc.text("13357 Berlin", 14, 34);
+      doc.text("USt-ID-Nr.: DE353633206", 14, 41);
 
       const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAYAAAA8AXHiAAAABHNCSVQICAgIfAhkiAAAARlJREFUeJzt3TEKwzAQRVFz0HjTR0KXepNXSNHyk+H2AJV4LF1nJ7vzW5s3zG8CyDMOQCgs7sBG2AwCziAp5Ak9A1SDXEC0xL2k4rXrQ0TOVJqYAdRJomwp0gcUlTggpVJxOympcC5ShD+jGC/QyCgBDQgAVNgLC1VITR1JhYQAUrKMNVzJSDQZTkGcFgFQi8u8yEBYBJR4KuF8EEgt9BohqFzITFlvA6LBGmWlHVk0qUU1xSJCt0l+5zE6pH4lFeW+1T3ZqioiE+QiAH3zH4vr5e7QDE7OTe/YvEfAAAAAElFTkSuQmCC";
+      const pageWidth = doc.internal.pageSize.getWidth();
       doc.addImage(logoBase64, 'PNG', pageWidth - 54, 14, 40, 40);
 
       doc.setFontSize(18);
-      doc.text("RECHNUNG", 14, y += 20);
+      doc.text("RECHNUNG", pageWidth / 2, 60, { align: 'center' });
 
       const rechnungsnummerText = 'Nr. ' + aktuelleRechnungsnummer.toString().padStart(4, '0');
       doc.setFontSize(12);
-      doc.text(rechnungsnummerText, 14, y += 8);
-
-      const heute = new Date();
-      const datumFormat = heute.toLocaleDateString('de-DE');
-      doc.text("Datum: " + datumFormat, 14, y += 8);
+      doc.text(rechnungsnummerText, pageWidth - 50, 60);
 
       const kunde = document.getElementById("adresse").value || "Unbekannt";
-      doc.text("Kunde: " + kunde, 14, y += 10);
+      doc.text("Kunde: " + kunde, 14, 75);
 
       const mwstSatz = 0.19;
       let bruttoSumme = 0;
@@ -258,10 +254,10 @@
       doc.autoTable({
         head: [["Pos", "Artikel", "Menge", "Einzelpreis", "Gesamt"]],
         body: data,
-        startY: y + 5
+        startY: 85
       });
 
-      const finalY = doc.lastAutoTable.finalY || y + 10;
+      const finalY = doc.lastAutoTable.finalY || 90;
 
       doc.text(`Nettobetrag: ${nettoSumme.toFixed(2)} €`, pageWidth - 14, finalY + 10, { align: 'right' });
       doc.text(`MwSt 19%: ${mwstBetrag.toFixed(2)} €`, pageWidth - 14, finalY + 20, { align: 'right' });
@@ -271,17 +267,23 @@
       doc.save(`${safeName}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
     }
 
+    // === HIER: Datum anzeigen sobald DOM geladen ist + Debug ===
     document.addEventListener('DOMContentLoaded', function () {
+      const datumElement = document.getElementById('heutigesDatum');
+      console.log('Datum Element:', datumElement);
+      if (datumElement) {
+        const heute = new Date();
+        const datumFormat = heute.toLocaleDateString('de-DE');
+        datumElement.textContent = "Datum: " + datumFormat;
+      } else {
+        console.warn('Element mit id "heutigesDatum" nicht gefunden!');
+      }
+
       updateInvoiceNumberDisplay();
+
       if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
         addRow();
         setTimeout(() => updateTotalSum(), 10);
-      }
-      const heute = new Date();
-      const datumFormat = heute.toLocaleDateString('de-DE');
-      const datumElement = document.getElementById('heutigesDatum');
-      if (datumElement) {
-        datumElement.textContent = "Datum: " + datumFormat;
       }
     });
   </script>
