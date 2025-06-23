@@ -3,12 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>Rechnung – darcom24</title>
-  <!-- jsPDF (nur UMD laden!) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
-  <!-- AutoTable Plugin -->
   <style>
     body {
       font-family: sans-serif;
@@ -19,11 +16,11 @@
     .header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       margin-bottom: 2rem;
     }
     .header img {
-      max-width: 150px;
+      max-height: 80px;
     }
     input, select {
       display: block;
@@ -82,14 +79,14 @@
   </div>
 
   <div class="header">
-  <h2 style="display: flex; align-items: center; gap: 0.3rem;">
-    RECHNUNG <span id="rechnungsnummer" style="font-weight: normal;"></span>
-  </h2>
-  <div style="text-align: right;">
-    <img src="logo-darcom.png" alt="darcom24 Logo" style="max-height: 80px;" />
-    <div id="heutigesDatum" style="font-size: 14px; margin-top: 6px;"></div>
+    <h2 style="display: flex; align-items: center; gap: 0.3rem;">
+      RECHNUNG <span id="rechnungsnummer" style="font-weight: normal;"></span>
+    </h2>
+    <div style="text-align: right;">
+      <img src="logo-darcom.png" alt="darcom24 Logo" />
+      <div id="heutigesDatum" style="font-size: 14px; margin-top: 6px;"></div>
+    </div>
   </div>
-</div>
 
   <label for="adresse">Kunde:</label>
   <input type="text" id="adresse" placeholder="Kunde, Straße, PLZ, Ort" />
@@ -173,6 +170,7 @@
     function updateTotalSum() {
       const mwstSatz = 0.19;
       let bruttoSumme = 0;
+
       document.querySelectorAll('#artikelTabelle tbody tr').forEach(row => {
         const preisText = row.cells[4].textContent || '';
         const preis = parseFloat(preisText.replace(' €', '').replace(',', '.')) || 0;
@@ -260,11 +258,19 @@
       doc.save(`${safeName}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
     }
 
+    // Nur ein window.onload!
     window.onload = function () {
       updateInvoiceNumberDisplay();
       if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
         addRow();
         setTimeout(() => updateTotalSum(), 10);
+      }
+
+      const heute = new Date();
+      const datumFormat = heute.toLocaleDateString('de-DE');
+      const datumElement = document.getElementById('heutigesDatum');
+      if (datumElement) {
+        datumElement.textContent = "Datum: " + datumFormat;
       }
     };
   </script>
