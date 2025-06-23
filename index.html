@@ -266,21 +266,21 @@
       doc.save(`${safeName}_${rechnungsnummerText.replace(' ', '_')}.pdf`);
     }
 
-    window.onload = function () {
-      updateInvoiceNumberDisplay();
-      if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
-        addRow();
-        setTimeout(() => updateTotalSum(), 10);
-      }
+  window.onload = function () {
+  updateInvoiceNumberDisplay();
+  if (document.querySelector("#artikelTabelle tbody tr").length === 0) {
+    addRow();
+    setTimeout(() => updateTotalSum(), 10);
+  }
 
-      // Datum setzen - linksbündig unter Rechnung
-      const heute = new Date();
-      const datumFormat = heute.toLocaleDateString('de-DE');
-      const datumElement = document.getElementById('heutigesDatum');
-      if (datumElement) {
-        datumElement.textContent = "Datum: " + datumFormat;
-      }
-    };
+  const heute = new Date();
+  const datumFormat = heute.toLocaleDateString('de-DE');
+  const datumElement = document.getElementById('heutigesDatum');
+  if (datumElement) {
+    datumElement.textContent = "Datum: " + datumFormat;
+  }
+};
+
   </script>
 </body>
 </html>
