@@ -1,290 +1,154 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Rechnung – darcom24</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <script>
-    // jsPDF global machen
-    window.jsPDF = window.jspdf.jsPDF;
-  </script>
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-      max-width: 800px;
-      margin: auto;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 2rem;
-    }
-    .header-left {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 6px;
-    }
-    .header img {
-      max-height: 80px;
-    }
-    input, select {
-      display: block;
-      margin-bottom: 1rem;
-      width: 100%;
-      padding: 0.5rem;
-      box-sizing: border-box;
-    }
-    button {
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      cursor: pointer;
-      background-color: black;
-      color: white;
-      border: none;
-      border-radius: 0.5rem;
-      margin-right: 0.5rem;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 1rem;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 0.5rem;
-      text-align: left;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    .no-print {
-      display: block;
-    }
-    @media print {
-      .no-print {
-        display: none !important;
-      }
-    }
-    #rechnungSumme {
-      text-align: right;
-      font-weight: bold;
-      margin-bottom: 1rem;
-    }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #f2f2f2; }
+    #controls { margin-top: 20px; }
+    #controls button { margin-right: 10px; }
+    #summary { text-align: right; margin-top: 20px; font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <div class="print" style="text-align: left; margin-bottom: 10px;">
-    <strong>HC-Shop</strong><br />
-    Pankstraße 46<br />
-    13357 Berlin<br />
-    USt-ID-Nr.: (ist beantragt)
-  </div>
+<h1>Rechnung</h1>
 
-  <div class="header">
-    <div class="header-left">
-      <h2 style="margin: 0;"><br>
-        RECHNUNG <span id="rechnungsnummer" style="font-weight: normal;"></span>
-      </h2>
-      <div id="heutigesDatum" style="font-size: 14px; color: black;">Datum: </div>
-    </div>
-    <div>
-      <img src="logo-darcom.png" alt="darcom24 Logo" />
-    </div>
-  </div>
+<input type="text" id="artikelName" placeholder="Artikelname">
+<input type="number" id="einzelpreis" placeholder="Einzelpreis" step="0.01">
+<input type="number" id="menge" placeholder="Menge" min="1" value="1">
+<button onclick="artikelHinzufuegen()">+ Artikel hinzufügen</button>
 
-  <label for="adresse">Kunde:</label>
-  <input type="text" id="adresse" placeholder="Kunde, Straße, PLZ, Ort" />
-
-  <label>Artikel (Pos, Name, Menge, Einzelpreis inkl. MwSt):</label>
-  <table id="artikelTabelle">
-    <thead>
-      <tr>
-        <th>Pos</th>
-        <th>Artikel</th>
-        <th>Menge</th>
-        <th>Einzelpreis (€)</th>
-        <th>Gesamtpreis (€)</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <div id="rechnungSumme"></div>
-
-  <div class="no-print">
-    <button onclick="window.print()">Drucken</button>
-    <button onclick="exportCSV()">CSV Export</button>
-    <button onclick="downloadPDF()">PDF herunterladen</button>
-    <button onclick="addRow()">+ Artikel hinzufügen</button>
-  </div>
-
-  <script>
-    let aktuelleRechnungsnummer = 1;
-
-    function getNextInvoiceNumber() {
-      let last = localStorage.getItem('rechnungsnummer');
-      let next = last ? parseInt(last) + 1 : 1;
-      localStorage.setItem('rechnungsnummer', next);
-      aktuelleRechnungsnummer = next;
-      return next;
-    }
-
-    function updateInvoiceNumberDisplay() {
-      const num = getNextInvoiceNumber();
-      document.getElementById('rechnungsnummer').textContent = 'Nr. ' + num.toString().padStart(4, '0');
-    }
-
-    function addRow(name = '', menge = 1, preis = 0) {
-      const tbody = document.querySelector("#artikelTabelle tbody");
-      const row = document.createElement('tr');
-      const pos = tbody.rows.length + 1;
-      row.innerHTML = `
-        <td>${pos}</td>
-        <td><input type="text" value="${name}"></td>
-        <td><input type="number" min="1" value="${menge}" onchange="updateGesamtpreis(this)"></td>
-        <td><input type="number" min="0" step="0.01" value="${preis}" onchange="updateGesamtpreis(this)"></td>
-        <td>0.00 €</td>
-        <td><button onclick="removeRow(this)">✕</button></td>
-      `;
-      tbody.appendChild(row);
-      updateGesamtpreis(row.cells[3].querySelector('input'));
-    }
-
-    function removeRow(btn) {
-      btn.closest('tr').remove();
-      updatePositions();
-      updateTotalSum();
-    }
-
-    function updatePositions() {
-      const rows = document.querySelectorAll('#artikelTabelle tbody tr');
-      rows.forEach((row, i) => row.cells[0].textContent = i + 1);
-    }
-
-    function updateGesamtpreis(input) {
-      const row = input.closest('tr');
-      const menge = parseInt(row.cells[2].querySelector('input').value) || 0;
-      const preis = parseFloat(row.cells[3].querySelector('input').value) || 0;
-      row.cells[4].textContent = (menge * preis).toFixed(2) + ' €';
-      updateTotalSum();
-    }
-
-    function updateTotalSum() {
-      const mwst = 0.19;
-      let brutto = 0;
-      document.querySelectorAll('#artikelTabelle tbody tr').forEach(row => {
-        const wert = parseFloat(row.cells[4].textContent.replace(' €', '')) || 0;
-        brutto += wert;
-      });
-      const netto = brutto / (1 + mwst);
-      const steuer = brutto - netto;
-      document.getElementById('rechnungSumme').innerHTML =
-        `Nettobetrag: ${netto.toFixed(2)} €<br>` +
-        `MwSt 19%: ${steuer.toFixed(2)} €<br>` +
-        `<b>Gesamtpreis: ${brutto.toFixed(2)} €</b>`;
-    }
-
-    function exportCSV() {
-      let csv = 'Pos,Artikel,Menge,Einzelpreis,Gesamtpreis\n';
-      document.querySelectorAll('#artikelTabelle tbody tr').forEach(row => {
-        const cols = Array.from(row.cells).slice(0, 5);
-        const values = cols.map(td =>
-          td.querySelector('input') ? td.querySelector('input').value : td.textContent.replace(' €', '').trim()
-        );
-        csv += values.join(',') + '\n';
-      });
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'rechnung.csv';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function downloadPDF() {
-      const doc = new jsPDF();
-      doc.setFontSize(12);
-      doc.text("HC-Shop", 14, 20);
-      doc.text("Pankstraße 46", 14, 27);
-      doc.text("13357 Berlin", 14, 34);
-      doc.text("USt-ID-Nr.: DE353633206", 14, 41);
-
-      const pageWidth = doc.internal.pageSize.getWidth();
-      doc.setFontSize(18);
-      doc.text("RECHNUNG", pageWidth / 2, 60, { align: 'center' });
-
-      const rechnungsnummer = 'Nr. ' + aktuelleRechnungsnummer.toString().padStart(4, '0');
-      doc.setFontSize(12);
-      doc.text(rechnungsnummer, pageWidth - 50, 60);
-
-      const datum = new Date().toLocaleDateString('de-DE');
-      doc.text("Datum: " + datum, 14, 70);
-
-      const kunde = document.getElementById("adresse").value || "Unbekannt";
-      doc.text("Kunde: " + kunde, 14, 80);
-
-      const data = [];
-      let brutto = 0;
-      document.querySelectorAll('#artikelTabelle tbody tr').forEach((row, i) => {
-        const artikel = row.cells[1].querySelector('input').value || '';
-        const menge = row.cells[2].querySelector('input').value || '';
-        const preis = row.cells[3].querySelector('input').value || '';
-        const gesamt = row.cells[4].textContent || '';
-        data.push([(i + 1).toString(), artikel, menge, preis + ' €', gesamt]);
-        brutto += parseFloat(gesamt.replace(' €', '')) || 0;
-      });
-
-      const netto = brutto / 1.19;
-      const steuer = brutto - netto;
-
-      doc.autoTable({
-        head: [["Pos", "Artikel", "Menge", "Einzelpreis", "Gesamt"]],
-        body: data,
-        startY: 90
-      });
-
-      const endY = doc.lastAutoTable.finalY || 100;
-
-      doc.text(`Nettobetrag: ${netto.toFixed(2)} €`, pageWidth - 14, endY + 10, { align: 'right' });
-      doc.text(`MwSt 19%: ${steuer.toFixed(2)} €`, pageWidth - 14, endY + 20, { align: 'right' });
-      doc.text(`Gesamtpreis: ${brutto.toFixed(2)} €`, pageWidth - 14, endY + 30, { align: 'right' });
-
-      const safeName = kunde.replace(/\s+/g, '_').replace(/[^\w\-]/g, '');
-      doc.save(`${safeName}_${rechnungsnummer.replace(' ', '_')}.pdf`);
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-      updateInvoiceNumberDisplay();
-      document.getElementById('heutigesDatum').textContent = 'Datum: ' + new Date().toLocaleDateString('de-DE');
-      addRow(); // erste Zeile automatisch hinzufügen
-    });
-  </script>
-  <div style="display: flex; justify-content: space-between; margin-top: 50px; font-size: 14px; color: grey;">
-  <div>
-    <p>HC-Shop</p>
-    <p>Pankstr. 46</p>
-    <p>13357 Berlin</p>
-    <p>Deutschland</p>
-  </div>
-  <div>
-    <p>Kontoinh.: A. Darraj</p>
-    <p>IBAN: DE17 1111</p>
-    <p>BIC: BELADEBEXXX</p>
-    <p>Bank: Berliner Sparkasse</p>
-  </div>
-  <div>
-    <p>USt-IdNr: DE31</p>
-    <p>Geschäftsführer</p>
-    <p>A. Darraj</p>
-  </div>
+<div id="controls">
+  <button onclick="window.print()">Drucken</button>
+  <button onclick="exportCSV()">CSV Export</button>
+  <button onclick="downloadPDF()">PDF herunterladen</button>
 </div>
+
+<table id="artikelTabelle">
+  <thead>
+    <tr>
+      <th>Artikel</th>
+      <th>Einzelpreis</th>
+      <th>Menge</th>
+      <th>Gesamt</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div id="summary"></div>
+
+<script>
+  const artikelListe = [];
+
+  function artikelHinzufuegen() {
+    const name = document.getElementById('artikelName').value;
+    const preis = parseFloat(document.getElementById('einzelpreis').value);
+    const menge = parseInt(document.getElementById('menge').value);
+
+    if (!name || isNaN(preis) || isNaN(menge)) {
+      alert("Bitte alle Felder korrekt ausfüllen.");
+      return;
+    }
+
+    artikelListe.push({ name, preis, menge });
+    updateTable();
+    updateTotalSum();
+  }
+
+  function updateTable() {
+    const tbody = document.querySelector('#artikelTabelle tbody');
+    tbody.innerHTML = '';
+    artikelListe.forEach((artikel) => {
+      const zeile = document.createElement('tr');
+      const gesamt = artikel.preis * artikel.menge;
+      zeile.innerHTML = `
+        <td>${artikel.name}</td>
+        <td>${artikel.preis.toFixed(2)} €</td>
+        <td>${artikel.menge}</td>
+        <td>${gesamt.toFixed(2)} €</td>
+      `;
+      tbody.appendChild(zeile);
+    });
+  }
+
+  function updateTotalSum() {
+    const mwst = 0.19;
+    const versand = 6.19;
+    let brutto = 0;
+
+    artikelListe.forEach(item => {
+      brutto += item.preis * item.menge;
+    });
+
+    const netto = brutto / (1 + mwst);
+    const steuer = brutto - netto;
+    const gesamt = brutto + versand;
+
+    document.getElementById('summary').innerHTML =
+      `Nettobetrag: ${netto.toFixed(2)} €<br>` +
+      `MwSt 19%: ${steuer.toFixed(2)} €<br>` +
+      `Versand: ${versand.toFixed(2)} €<br>` +
+      `<b>Gesamtpreis: ${gesamt.toFixed(2)} €</b>`;
+  }
+
+  function exportCSV() {
+    let csvContent = "Artikel,Einzelpreis,Menge,Gesamt\n";
+    artikelListe.forEach(item => {
+      const zeile = `${item.name},${item.preis},${item.menge},${(item.preis * item.menge).toFixed(2)}`;
+      csvContent += zeile + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "rechnung.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  async function downloadPDF() {
+    const {{ jsPDF }} = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.text("Rechnung", 14, 20);
+
+    const rows = artikelListe.map(item => [
+      item.name,
+      item.preis.toFixed(2) + ' €',
+      item.menge,
+      (item.preis * item.menge).toFixed(2) + ' €'
+    ]);
+
+    doc.autoTable({
+      startY: 30,
+      head: [['Artikel', 'Einzelpreis', 'Menge', 'Gesamt']],
+      body: rows
+    });
+
+    const brutto = artikelListe.reduce((sum, a) => sum + a.preis * a.menge, 0);
+    const netto = brutto / 1.19;
+    const steuer = brutto - netto;
+    const versand = 6.19;
+    const gesamt = brutto + versand;
+    const endY = doc.lastAutoTable.finalY || 40;
+
+    doc.text(`Nettobetrag: ${netto.toFixed(2)} €`, 200, endY + 10, { align: 'right' });
+    doc.text(`MwSt 19%: ${steuer.toFixed(2)} €`, 200, endY + 20, { align: 'right' });
+    doc.text(`Versand: ${versand.toFixed(2)} €`, 200, endY + 30, { align: 'right' });
+    doc.text(`Gesamtpreis: ${gesamt.toFixed(2)} €`, 200, endY + 40, { align: 'right' });
+
+    doc.save("rechnung.pdf");
+  }
+</script>
 
 </body>
 </html>
