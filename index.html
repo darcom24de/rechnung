@@ -184,10 +184,15 @@
       });
       const netto = brutto / (1 + mwst);
       const steuer = brutto - netto;
-      document.getElementById('rechnungSumme').innerHTML =
-        `Nettobetrag: ${netto.toFixed(2)} €<br>` +
-        `MwSt 19%: ${steuer.toFixed(2)} €<br>` +
-        `<b>Gesamtpreis: ${brutto.toFixed(2)} €</b>`;
+     const versand = 7.19;
+const gesamt = brutto + versand;
+
+document.getElementById('rechnungSumme').innerHTML =
+  `Nettobetrag: ${netto.toFixed(2)} €<br>` +
+  `MwSt 19%: ${steuer.toFixed(2)} €<br>` +
+  `Versand: ${versand.toFixed(2)} €<br>` +
+  `<b>Gesamtpreis: ${gesamt.toFixed(2)} €</b>`;
+
     }
 
     function exportCSV() {
@@ -254,7 +259,13 @@
 
       doc.text(`Nettobetrag: ${netto.toFixed(2)} €`, pageWidth - 14, endY + 10, { align: 'right' });
       doc.text(`MwSt 19%: ${steuer.toFixed(2)} €`, pageWidth - 14, endY + 20, { align: 'right' });
-      doc.text(`Gesamtpreis: ${brutto.toFixed(2)} €`, pageWidth - 14, endY + 30, { align: 'right' });
+     
+	const versand = 7.19;
+	const gesamt = brutto + versand;
+
+	doc.text(`Versand: ${versand.toFixed(2)} €`, pageWidth - 14, endY + 30, { align: 'right' });
+	doc.text(`Gesamtpreis: ${gesamt.toFixed(2)} €`, pageWidth - 14, endY + 40, { align: 'right' });
+
 
       const safeName = kunde.replace(/\s+/g, '_').replace(/[^\w\-]/g, '');
       doc.save(`${safeName}_${rechnungsnummer.replace(' ', '_')}.pdf`);
@@ -275,12 +286,12 @@
   </div>
   <div>
     <p>Kontoinh.: A. Darraj</p>
-    <p>IBAN: DE17 1111xxxxxxxxxx</p>
-    <p>BIC: xxxxxxxxxxx</p>
-    <p>Bank: N26</p>
+    <p>IBAN: DE17 1111</p>
+    <p>BIC: BELADEBEXXX</p>
+    <p>Bank: Berliner Sparkasse</p>
   </div>
   <div>
-    <p>USt-IdNr: DExxxxxxxxxxxxxx</p>
+    <p>USt-IdNr: DE31</p>
     <p>Geschäftsführer</p>
     <p>A. Darraj</p>
   </div>
