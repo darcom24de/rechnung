@@ -140,38 +140,7 @@
       document.getElementById('rechnungsnummer').textContent = 'Nr. ' + num.toString().padStart(4, '0');
     }
 
-const leftColumn = [
-  "HC-Shop",
-  "Pankstr. 46",
-  "13357 Berlin",
-  "Deutschland"
-];
-
-const middleColumn = [
-  "Kontoinh.: A. Darraj",
-  "IBAN: DExxxxxxxxxxxx",
-  "BIC: BELADEBEXXX",
-  "Bank: N26"
-];
-
-const rightColumn = [
-  "USt-IdNr: DExxxxxxxxx",
-  "Geschäftsführer",
-  "A. Darraj"
-];
-
-let startY = 30; // Abstand von oben
-leftColumn.forEach((line, i) => {
-  doc.text(line, 20, startY + i * 6);
-});
-middleColumn.forEach((line, i) => {
-  doc.text(line, 80, startY + i * 6);
-});
-rightColumn.forEach((line, i) => {
-  doc.text(line, 140, startY + i * 6);
-});
-
-	  
+ 
     function addRow(name = '', menge = 1, preis = 0) {
       const tbody = document.querySelector("#artikelTabelle tbody");
       const row = document.createElement('tr');
